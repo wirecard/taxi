@@ -1,0 +1,32 @@
+version: '3'
+services:
+
+  sft:
+    image: atmoz/sftp:alpine
+    container_name: sftp
+    volumes:
+      # mount agency translation data to ./sftp-data
+      - ./sftp-data:/home/agency
+      # mount public keys used by agency
+      - ./sftp-keys/agency_rsa_key.pub:/home/agency/.ssh/keys/agency_rsa_key.pub:ro
+    # run on port 2222
+    ports:
+      - "2222:22"
+    # create user 'agency'
+    command: agency::1001
+
+  s3:
+    image: minio/minio:latest
+    container_name: s3
+    # persistent data
+    volumes:
+      - ./s3-data:/data
+    # run on port 9000
+    ports:
+      - "9000:9000"
+    # set credentials
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: letmeinplease
+    # s3: serve root
+    command: server /data
