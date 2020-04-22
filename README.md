@@ -1,6 +1,13 @@
-# Translation - Proof of Concept
+# TAXI - Proof of Concept
+**TAXI** stands for *Translation Automation eXchange Interface*.
 
 ## Setup
+### Dependencies
+```sh
+gem install bundler:2.1.4
+bundle install
+bundle exec bin/taxi --help
+```
 
 ### Dev Environment
 ```sh
@@ -12,7 +19,7 @@ docker-compose up
 #### Access
 Log into the SFTP server:
 ```sh
-sftp -P 2222 -i sft-keys/agency_rsa_key agency@localhost
+sftp -P 2222 -i sftp-keys/agency_rsa_key agency@localhost
 ```
 
 Access the S3 bucket interface:
