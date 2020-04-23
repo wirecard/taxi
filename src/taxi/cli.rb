@@ -47,7 +47,7 @@ The package subcommand provides an interface to create, upload and deploy transl
     desc 'list-config', 'Output the currently loaded config'
     def list_config
       raise StandardError.new(
-        'Tried to print environment without \'DEV_ENV\' set. ' \
+        'Tried to print environment without $DEV_ENV set. ' \
           'Abort printing production credentials.'
       ) if !ENV.key?('DEV_ENV')
 

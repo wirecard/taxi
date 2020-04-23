@@ -17,6 +17,61 @@ module Taxi
       ap @sftp_config
       puts '+ AWS Config'.yellow
       ap @aws_config
+
+      puts '* S3 Buckets'.blue
+      ap aws_s3_client.list_buckets
+    end
+
+    def aws_s3_client
+      # Create Role Credentials with AssumeRole ARN
+      role_response = Aws::AssumeRoleCredentials.new(
+        client: @aws_sts_client,
+        role_arn: @aws_config.role_assume,
+        role_session_name: 'github://wirecard/taxi',
+        duration_seconds: 1200,
+        tags: [
+          {
+            key: 'client',
+            value: 'TAXI',
+          },
+          {
+            key: 'repository',
+            value: 'wirecard/taxi',
+          },
+          {
+            key: 'team',
+            value:'tecdoc',
+          },
+        ],
+        endpoint: @aws_config.endpoint_url
+      )
+
+      # role_response = @aws_sts_client.assume_role(
+      #   role_arn: @aws_config.role_assume,
+      #   role_session_name: 'github://wirecard/taxi',
+      #   duration_seconds: 1200,
+      #   tags: [
+      #     {
+      #       key: 'client',
+      #       value: 'TAXI',
+      #     },
+      #     {
+      #       key: 'repository',
+      #       value: 'wirecard/taxi',
+      #     },
+      #     {
+      #       key: 'team',
+      #       value:'tecdoc',
+      #     },
+      #   ],
+      #   endpoint: @aws_config.endpoint_url
+      # )
+
+      # Use AssumeRole Credentials to create S3 Client
+      return Aws::S3::Client(
+        credentials: role_response.credentials,
+        region: @aws_config.region
+      )
     end
 
     private
@@ -26,6 +81,7 @@ module Taxi
         access_key_id: ENV['AWS_ACCESS_KEY_ID'],
         secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],
         region: ENV['AWS_REGION'],
+        role_assume: ENV['AWS_ROLE_TO_ASSUME'],
         endpoint_url: ENV['AWS_ENDPOINT_URL']
       }
       @aws_config = OpenStruct.new(aws_config)
