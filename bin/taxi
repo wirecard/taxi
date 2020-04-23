@@ -5,6 +5,16 @@
 libdir = File.join(File.dirname(__FILE__), '..', 'src')
 $LOAD_PATH.unshift(libdir) unless $LOAD_PATH.include?(libdir)
 
+require 'dotenv'
+Dotenv.load if ENV.key?('DEV_ENV')
+# Needs AWS_* env vars
+Dotenv.require_keys('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_REGION')
+# Needs SFTP env vars
+Dotenv.require_keys('SFTP_USER', 'SFTP_HOST', 'SFTP_PORT')
+
 require 'taxi'
+
+Taxi::Config.instance
+Taxi::SessionFactory.instance
 
 Taxi::CLI.start(ARGV)

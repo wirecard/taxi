@@ -1,14 +1,20 @@
 # frozen_string_literal: true
 
-class SessionFactory
-  def initialize(aws_config, sftp_config)
-    @aws_config = aws_config
-    @sftp_config = sftp_config
-  end
+require 'singleton'
+require 'aws-sdk-s3'
 
-  def create_S3_session(bucket)
-  end
+module Taxi
+  class SessionFactory
+    include Singleton
+    def create_S3_session(bucket)
+    end
 
-  def create_sftp_session
+    def create_sftp_session
+    end
+
+    private
+
+    def initialize
+    end
   end
 end
