@@ -12,3 +12,7 @@ gem "thor", "~> 1.0"
 gem "dotenv", "~> 2.7"
 
 gem "aws-sdk-s3", "~> 1.63"
+
+gem "colorize", "~> 0.8.1"
+
+gem "amazing_print", "~> 1.0"

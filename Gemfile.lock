@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    amazing_print (1.0.0)
     aws-eventstream (1.1.0)
     aws-partitions (1.301.0)
     aws-sdk-core (3.94.0)
@@ -17,6 +18,7 @@ GEM
       aws-sigv4 (~> 1.1)
     aws-sigv4 (1.1.2)
       aws-eventstream (~> 1.0, >= 1.0.2)
+    colorize (0.8.1)
     dotenv (2.7.5)
     jmespath (1.4.0)
     rake (13.0.1)
@@ -26,7 +28,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  amazing_print (~> 1.0)
   aws-sdk-s3 (~> 1.63)
+  colorize (~> 0.8.1)
   dotenv (~> 2.7)
   rake (~> 13.0)
   thor (~> 1.0)
