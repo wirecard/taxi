@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative './taxi/cli.rb'
+require 'taxi/cli'
 # commands
-require_relative './taxi/makepkg.rb'
+require 'taxi/commands/pkgmake'
 

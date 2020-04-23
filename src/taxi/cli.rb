@@ -1,18 +1,19 @@
 # frozen_string_literal: true
 
 require 'thor'
+require 'taxi/config'
 
 module Taxi
   module SubCLI
     class Package < Thor
-      desc 'make <url>', 'Create a translation package for URL'
-      def make(name)
-        puts "make #{url}"
+      desc 'make <name> <s3>', 'Create a translation package for <s3> named <name>'
+      def make(name, s3)
+        puts "make #{name} #{s3}"
       end
 
-      desc 'translate <id> <target-language>', 'Upload the translation package name ID to SFTP'
-      def translate(id, language)
-        puts "translate #{id} #{language}"
+      desc 'translate <name> <language>', 'Upload the translation package <name> to SFTP to be translated to <language>'
+      def translate(name, language)
+        puts "translate #{name} #{language}"
       end
 
       desc 'deploy <id> <language>', 'Deploy translation package named ID to S3'
@@ -38,5 +39,14 @@ The package subcommand provides an interface to create, upload and deploy transl
       puts 'status'
     end
 
+    desc 'check-bucket <s3>', 'Checks the provided bucket <s3> and lists the files'
+    def check_bucket(s3_id)
+      puts "check_bucket #{s3_id}"
+    end
+
+    desc 'list-config', 'Output the currently loaded config'
+    def list_config
+      Config.instance.print
+    end
   end
 end
