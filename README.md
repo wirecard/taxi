@@ -51,6 +51,45 @@ aws s3 --endpoint-url http://localhost:9000 --profile minio ls s3://docs.com
 At this point, both the SFTP server and the S3 clone are up and running.
 You may create more buckets and add more content at this point.
 
-## TODO
+### TODO
 * [ ] Add multiple users to SFTP
 * [ ] SFTP: Mount user config file for users, and generate the keys according to the user names in that config
+
+## Translations
+
+### Stages and Structure
+There are 4 stages in the translation workflow:
+1. **open**: ready to be translated by the translation agency
+2. **review**: ready to be reviewed, adapted and then approved for deployment
+3. **deploy**: ready to be deployed
+4. **done**: deployed in production
+
+
+Overall file structure:
+```
+SFTP/
+- open/
+- review/
+- deploy/
+- done/
+```
+
+For each category, the following file structure must be present:
+```
+- open/
+  - <project>/
+    - 2020-04-22/
+      - ru_RU/
+      - de_DE/
+```
+
+So the complete identifier for a *package* is `<project>/2020-04-22/ru_RU`, where the root folder `open` is the status.
+**TBD**: The package `<project>/2020-04-22/ru_RU` will be duplicated or moved to other stages.
+
+Using `taxi`, an example workflow would be:
+1. `taxi package make`
+2. `taxi package translate`
+3. `taxi package review pass`
+4. `taxi package deploy`
+
+You can use `taxi package status` or `taxi package status <id>` to check the status of all/one package(s).
