@@ -44,6 +44,11 @@ The package subcommand provides an interface to create, upload and deploy transl
       puts "check_bucket #{s3_id}"
     end
 
+    desc 'list-buckets', 'List buckets'
+    def list_buckets
+      Config.instance.list_buckets
+    end
+
     desc 'list-config', 'Output the currently loaded config'
     def list_config
       raise StandardError.new(

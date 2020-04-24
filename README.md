@@ -62,19 +62,19 @@ docker-compose up
 ```
 
 ### Access
-#### SFTP
 Log into the SFTP server:
 ```sh
 sftp -P 2222 -i sftp-keys/agency_rsa_key agency@localhost
 ```
 
-#### S3/minio
-##### Web Interface or Content Access
+S3 Access - Web interface or resources:
 ```sh
 open http://localhost:9000
 # or
 open http://localhost:9000/path/to/document
 ```
+
+#### S3/minio
 
 ##### Minio Users
 In order to use the AssumeRole functionality, minio needs to have at least one user.

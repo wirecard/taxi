@@ -16,17 +16,21 @@ cat > allowall.json << EOF
      ],
      "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::*"
-      ],
+            "arn:aws:s3:::*"
+         ],
       "Sid": "AllowAll"
     },
     {
-      "Action": "*",
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:s3:::mybucket/*"
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
       ],
-      "Sid": "AllowAllMyBucket"
+     "Effect": "Allow",
+     "Resource": [
+            "arn:aws:s3:::*"
+         ],
+     "Sid": "AllowAllBucket"
     }
   ]
 }
@@ -38,3 +42,5 @@ mc admin user add minio myuser myuserletmein
 mc admin group add minio mygroup myuser
 
 mc admin policy set minio allowall group=mygroup
+
+mc mb minio/mybucket

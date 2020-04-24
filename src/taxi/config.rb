@@ -19,6 +19,12 @@ module Taxi
       ap @aws_config
     end
 
+    def list_buckets
+      puts '* AWS Buckets'.yellow
+      s3 = aws_s3_client
+      ap s3.list_buckets
+    end
+
     def aws_assume_role
       # Create Role Credentials with AssumeRole ARN
       Aws::AssumeRoleCredentials.new(
