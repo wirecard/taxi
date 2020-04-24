@@ -3,8 +3,6 @@
 
 HOST=s3
 BUCKETS="wcd nov pdo cps mps"
-MINIO_ACCESS_KEY=minio
-MINIO_SECRET_KEY=letmeinplease
 LOG=/dev/null
 
 mc config host add ${HOST} http://${HOST}:9000 "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}" --api S3v4
