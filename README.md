@@ -55,10 +55,29 @@ Using `taxi`, an example workflow would be:
 You can use `taxi package status` or `taxi package status <id>` to check the status of all/one package(s).
 
 ## Dev Environment
+This section describes the setup of a development environment.
+
+### Setup
+
+1. Generate SFTP Keys
 ```sh
 cd dev/
 ./generate_keys.sh
-docker-compose up
+```
+
+2. Start Containers
+```sh
+docker-compose -f dev/docker-compose.yml up
+```
+
+3. Setup Access
+In order to use the AssumeRole functionality, minio needs to have at least one user.
+`setup_minio.sh` adds S3 Access Policies, Buckets and the Admin User.
+```sh
+docker run --rm -v $(pwd)/dev/scripts:/scripts \
+  --entrypoint=/scripts/setup_minio.sh \
+  --net=dev_default \
+  minio/mc
 ```
 
 ### Access
@@ -74,25 +93,7 @@ open http://localhost:9000
 open http://localhost:9000/path/to/document
 ```
 
-#### Setup S3/minio
-
-##### 1. Start Containers
-```sh
-docker-compose -f dev/docker-compose.yml up
-```
-
-##### 2. Setup Access
-In order to use the AssumeRole functionality, minio needs to have at least one user.
-`setup_minio.sh` adds S3 Access Policies, Buckets and the Admin User.
-```sh
-cd dev/
-docker run --rm -v $(pwd)/scripts:/scripts \
-  --entrypoint=/scripts/setup_minio.sh \
-  --net=dev_default \
-  minio/mc
-```
-
-##### AWS CLI
+#### AWS CLI
 AWS CLI setup for minio, see https://docs.min.io/docs/aws-cli-with-minio.html
 The credentials that need to be used for `aws configure --profile minio-admin` are:
 * Access Key ID: `minio`
