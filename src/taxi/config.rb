@@ -17,14 +17,11 @@ module Taxi
       ap @sftp_config
       puts '+ AWS Config'.yellow
       ap @aws_config
-
-      puts '* S3 Buckets'.blue
-      ap aws_s3_client.list_buckets
     end
 
-    def aws_s3_client
+    def aws_assume_role
       # Create Role Credentials with AssumeRole ARN
-      role_response = Aws::AssumeRoleCredentials.new(
+      Aws::AssumeRoleCredentials.new(
         client: @aws_sts_client,
         role_arn: @aws_config.role_assume,
         role_session_name: 'github://wirecard/taxi',
@@ -32,46 +29,25 @@ module Taxi
         tags: [
           {
             key: 'client',
-            value: 'TAXI',
+            value: 'TAXI'
           },
           {
             key: 'repository',
-            value: 'wirecard/taxi',
+            value: 'wirecard/taxi'
           },
           {
             key: 'team',
-            value:'tecdoc',
-          },
+            value:'tecdoc'
+          }
         ],
         endpoint: @aws_config.endpoint_url
       )
+    end
 
-      # role_response = @aws_sts_client.assume_role(
-      #   role_arn: @aws_config.role_assume,
-      #   role_session_name: 'github://wirecard/taxi',
-      #   duration_seconds: 1200,
-      #   tags: [
-      #     {
-      #       key: 'client',
-      #       value: 'TAXI',
-      #     },
-      #     {
-      #       key: 'repository',
-      #       value: 'wirecard/taxi',
-      #     },
-      #     {
-      #       key: 'team',
-      #       value:'tecdoc',
-      #     },
-      #   ],
-      #   endpoint: @aws_config.endpoint_url
-      # )
-
+    def aws_s3_client
+      role_response = aws_assume_role
       # Use AssumeRole Credentials to create S3 Client
-      return Aws::S3::Client(
-        credentials: role_response.credentials,
-        region: @aws_config.region
-      )
+      Aws::S3::Client.new(credentials: role_response.credentials)
     end
 
     private
@@ -82,7 +58,8 @@ module Taxi
         secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],
         region: ENV['AWS_REGION'],
         role_assume: ENV['AWS_ROLE_TO_ASSUME'],
-        endpoint_url: ENV['AWS_ENDPOINT_URL']
+        endpoint_url: ENV['AWS_ENDPOINT_URL'],
+        signature_version: ENV['AWS_SIGNATURE_VERSION']&.to_sym || :v2
       }
       @aws_config = OpenStruct.new(aws_config)
 
@@ -94,14 +71,16 @@ module Taxi
       }
       @sftp_config = OpenStruct.new(sftp_config)
 
-      @aws_credentials = Aws::Credentials.new(
-        @aws_config.access_key_id, @aws_config.secret_access_key
+      Aws.config.update(
+        endpoint: @aws_config.endpoint_url,
+        access_key_id: @aws_config.access_key_id,
+        secret_access_key: @aws_config.secret_access_key,
+        region: @aws_config.region
       )
+      Aws.use_bundled_cert!
 
-      @aws_sts_client = Aws::STS::Client.new(
-        region: @aws_config.region,
-        credentials: @aws_credentials
-      )
+      # @aws_credentials = Aws::Credentials.new
+      @aws_sts_client = Aws::STS::Client.new
     end
   end
 end
