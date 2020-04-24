@@ -76,21 +76,48 @@ open http://localhost:9000
 open http://localhost:9000/path/to/document
 ```
 
+##### Minio Users
+In order to use the AssumeRole functionality, minio needs to have at least one user.
+```sh
+docker run --rm -v $(pwd)/scripts:/scripts \
+  --entrypoint=/scripts/setup_minio.sh \
+  --net=dev_default \
+  minio/mc
+```
+
 ##### AWS CLI
 AWS CLI setup for minio, see https://docs.min.io/docs/aws-cli-with-minio.html
+The credentials that need to be used for `aws configure --profile minio-admin` are:
+* Access Key ID: `minio`
+* Secret Access Key: `letmeinplease`
+* Region: eu-central-1
 
+The credentials that need to be used for `aws configure --profile minio` are:
+* Access Key ID: `myuser`
+* Secret Access Key: `myuserletmein`
+* Region: eu-central-1
+
+Once the AWS CLI has been configured, create a bucket:
 1. First, create a bucket
 ```sh
-aws s3 --endpoint-url http://localhost:9000 --profile minio mb s3://example.bucket.com
+aws s3 --endpoint-url http://localhost:9000 --profile minio mb s3://mybucket
 ```
 2. Then, upload documents
 ```sh
-aws s3 --endpoint-url http://localhost:9000 --profile minio cp /tmp/build/html s3://example.bucket.com --recursive
+aws s3 --endpoint-url http://localhost:9000 --profile minio cp /tmp/build/html s3://mybucket --recursive
 ```
 3. List the documents just created
 ```sh
-aws s3 --endpoint-url http://localhost:9000 --profile minio ls s3://example.bucket.com
+aws s3 --endpoint-url http://localhost:9000 --profile minio ls s3://mybucket
 ```
+
+**Assume Role**
+
+Test the configuration:
+```sh
+aws --endpoint-url http://localhost:9000 --profile minio sts assume-role --role-arn arn:xxx:xxx:xxx:xxxx --role-session-name term_session --output json
+```
+
 
 ### Development
 At this point, both the SFTP server and the S3 clone are up and running.
