@@ -74,11 +74,18 @@ open http://localhost:9000
 open http://localhost:9000/path/to/document
 ```
 
-#### S3/minio
+#### Setup S3/minio
 
-##### Minio Users
-In order to use the AssumeRole functionality, minio needs to have at least one user.
+##### 1. Start Containers
 ```sh
+docker-compose -f dev/docker-compose.yml up
+```
+
+##### 2. Setup Access
+In order to use the AssumeRole functionality, minio needs to have at least one user.
+`setup_minio.sh` adds S3 Access Policies, Buckets and the Admin User.
+```sh
+cd dev/
 docker run --rm -v $(pwd)/scripts:/scripts \
   --entrypoint=/scripts/setup_minio.sh \
   --net=dev_default \
