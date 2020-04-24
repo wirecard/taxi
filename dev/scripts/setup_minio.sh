@@ -45,9 +45,6 @@ mc admin group add ${HOST} mygroup myuser
 mc admin policy set ${HOST} allowall group=mygroup
 
 for bucket in ${BUCKETS}; do
-{
-  echo creating bucket ${bucket}
   mc mb ${HOST}/${bucket}
   mc policy set download ${HOST}/${bucket}
-} >&2
 done

@@ -40,10 +40,10 @@ services:
     ports:
       - "8888:80"
 
-  mc:
+  setup_s3:
     depends_on: ['s3']
     image: minio/mc:latest
-    container_name: mc
+    container_name: setup_s3
     volumes:
       - ./scripts:/scripts
     environment:

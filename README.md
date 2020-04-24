@@ -52,32 +52,22 @@ Using `taxi`, an example workflow would be:
 3. `taxi package review pass`
 4. `taxi package deploy`
 
-You can use `taxi package status` or `taxi package status <id>` to check the status of all/one package(s).
+You can use `taxi package status` or `taxi package status <id>` to check the status of all/one package(s**.
 
 ## Dev Environment
 This section describes the setup of a development environment.
 
 ### Setup
 
-1. Generate SFTP Keys
+**Run once:** Generate SSH keys for the users
 ```sh
 cd dev/
 ./generate_keys.sh
 ```
 
-2. Start Containers
+**Start infrastructure**
 ```sh
 docker-compose -f dev/docker-compose.yml up
-```
-
-3. Setup Access
-In order to use the AssumeRole functionality, minio needs to have at least one user.
-`setup_minio.sh` adds S3 Access Policies, Buckets and the Admin User.
-```sh
-docker run --rm -v $(pwd)/dev/scripts:/scripts \
-  --entrypoint=/scripts/setup_minio.sh \
-  --net=dev_default \
-  minio/mc
 ```
 
 ### Access
@@ -93,7 +83,7 @@ open http://localhost:9000
 open http://localhost:9000/path/to/document
 ```
 
-#### AWS CLI
+### AWS CLI
 AWS CLI setup for minio, see https://docs.min.io/docs/aws-cli-with-minio.html
 The credentials that need to be used for `aws configure --profile minio-admin` are:
 * Access Key ID: `minio`
@@ -130,6 +120,8 @@ aws --endpoint-url http://localhost:9000 --profile minio sts assume-role --role-
 ### Development
 At this point, both the SFTP server and the S3 clone are up and running.
 You may create more buckets and add more content at this point.
+`taxi` will use the environment variables specified in `.env` if `DEV_ENV=1`.
+These variables will set up `taxi` to use the local infrastructure from `dev/docker-compose.yml`.
 
 ### TODO
 * [ ] Add multiple users to SFTP
