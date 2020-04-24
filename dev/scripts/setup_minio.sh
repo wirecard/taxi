@@ -1,8 +1,11 @@
 #!/bin/sh
 
 
-# configure minio
-mc config host add minio http://s3:9000 minio letmeinplease
+HOST=s3
+BUCKETS=(wd nv pdo cps mps)
+LOG=/dev/null
+
+mc config host add ${HOST} http://localhost:9000 "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}" --api S3v4
 
 cat > allowall.json << EOF
 {
@@ -36,11 +39,15 @@ cat > allowall.json << EOF
 }
 EOF
 
-mc admin policy add minio allowall allowall.json
+mc admin policy add ${HOST} allowall allowall.json
+mc admin user add ${HOST} myuser myuserletmein
+mc admin group add ${HOST} mygroup myuser
+mc admin policy set ${HOST} allowall group=mygroup
 
-mc admin user add minio myuser myuserletmein
-mc admin group add minio mygroup myuser
-
-mc admin policy set minio allowall group=mygroup
-
-mc mb minio/mybucket
+for bucket in ${BUCKETS[@]}; do
+{
+  echo creating bucket ${bucket}
+  mc mb ${HOST}/${bucket}
+  mc policy set download ${HOST}/${bucket}
+} >&2
+done
