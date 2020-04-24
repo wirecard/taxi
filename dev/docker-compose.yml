@@ -39,3 +39,14 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
     ports:
       - "8888:80"
+
+  mc:
+    depends_on: ['s3']
+    image: minio/mc:latest
+    container_name: mc
+    volumes:
+      - ./scripts:/scripts
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: letmeinplease
+    entrypoint: /scripts/setup_minio.sh
