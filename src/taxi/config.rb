@@ -58,7 +58,9 @@ module Taxi
       role_credentials = aws_assume_role
       s3 = Aws::S3::Client.new(
         credentials: role_credentials,
-        disable_host_prefix_injection: true
+        force_path_style: true,
+        http_proxy: ENV['AWS_HTTP_PROXY']
+        # disable_host_prefix_injection: true,
       )
       ap s3
       s3

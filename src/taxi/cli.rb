@@ -39,9 +39,9 @@ The package subcommand provides an interface to create, upload and deploy transl
       puts 'status'
     end
 
-    desc 'check-bucket <s3>', 'Checks the provided bucket <s3> and lists the files'
-    def check_bucket(s3_id)
-      puts "check_bucket #{s3_id}"
+    desc 'check-bucket <bucket>', 'Checks the provided bucket <bucket> and lists the files'
+    def check_bucket(bucket)
+      Config.instance.aws_s3_client.list_objects_v2(bucket: bucket)
     end
 
     desc 'list-buckets', 'List buckets'
@@ -49,8 +49,8 @@ The package subcommand provides an interface to create, upload and deploy transl
       Config.instance.list_buckets
     end
 
-    desc 'list-config', 'Output the currently loaded config'
-    def list_config
+    desc 'config', 'Output the currently loaded config'
+    def config
       raise StandardError.new(
         'Tried to print environment without $DEV_ENV set. ' \
           'Abort printing production credentials.'
