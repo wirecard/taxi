@@ -22,33 +22,7 @@ module Taxi
       ap Aws.config
     end
 
-    def aws_s3_client
-      role_credentials = aws_assume_role
-      s3 = Aws::S3::Client.new(
-        credentials: role_credentials,
-        force_path_style: true,
-        http_proxy: ENV['AWS_HTTP_PROXY']
-      )
-      s3
-    end
-
     private
-
-    def aws_assume_role
-      tags = ['client TAXI', 'repository wirecard/taxi', 'team tecodc']
-      tags.map! do |entry|
-        key, value = entry.split(' ')
-        { key: key, value: value }
-      end
-
-      Aws::AssumeRoleCredentials.new(
-        client: @aws_sts_client,
-        role_arn: @aws_config.role_assume,
-        role_session_name: 'github://wirecard/taxi',
-        duration_seconds: 1200,
-        tags: tags
-      )
-    end
 
     def initialize
       aws_config = {
@@ -76,9 +50,6 @@ module Taxi
         region: @aws_config.region
       )
       Aws.use_bundled_cert!
-
-      # @aws_credentials = Aws::Credentials.new
-      @aws_sts_client = Aws::STS::Client.new
     end
   end
 end
