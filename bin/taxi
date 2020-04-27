@@ -15,6 +15,5 @@ Dotenv.require_keys('SFTP_USER', 'SFTP_HOST', 'SFTP_PORT')
 require 'taxi'
 
 Taxi::Config.instance
-Taxi::SessionFactory.instance
 
 Taxi::CLI.start(ARGV)
