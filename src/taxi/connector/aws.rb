@@ -50,7 +50,7 @@ module Taxi
       # get tmp dir to save data to
       puts "> Starting download to #{dir.white}".green
 
-      progress = ProgressBar.create(title: 'AWS::Get'.green, total: files.size)
+      progress = ProgressBar.create(title: '  AWS::Get'.green, total: files.size)
       Dir.chdir(dir) do
         files.each do |file|
           FileUtils.mkdir_p(File.dirname(file))
