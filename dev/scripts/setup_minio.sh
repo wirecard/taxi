@@ -9,33 +9,39 @@ mc config host add ${HOST} http://${HOST}:9000 "${MINIO_ACCESS_KEY}" "${MINIO_SE
 
 cat > allowall.json << EOF
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action":[
-        "s3:CreateBucket",
-        "s3:ListAllMyBuckets",
-        "s3:GetBucketLocation"
-     ],
-     "Effect": "Allow",
-      "Resource": [
-            "arn:aws:s3:::*"
-         ],
-      "Sid": "AllowAll"
-    },
-    {
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject"
-      ],
-     "Effect": "Allow",
-     "Resource": [
-            "arn:aws:s3:::*"
-         ],
-     "Sid": "AllowAllBucket"
-    }
-  ]
+    "Statement": [
+        {
+            "Sid": "AllowAll",
+            "Principal": {
+                "AWS": "arn:aws:iam::123456789000:role/minio"
+            },
+            "Resource": [
+                "arn:aws:s3:::*"
+            ],
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:ListAllMyBuckets",
+                "s3:GetBucketLocation"
+            ]
+        },
+        {
+            "Sid": "AllowAllBucket",
+            "Principal": {
+                "AWS": "arn:aws:iam::123456789000:role/minio"
+            },
+            "Resource": [
+                "arn:aws:s3:::*"
+            ],
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject"
+            ]
+        }
+    ],
+    "Version": "2012-10-17"
 }
 EOF
 
