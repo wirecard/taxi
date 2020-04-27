@@ -2,6 +2,7 @@ require 'net/sftp'
 
 module Taxi
   class SFTP
+    include Singleton
     def list_dir(path = '/')
       @sftp.dir.foreach(path) do |element|
         pp element
