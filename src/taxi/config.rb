@@ -9,7 +9,7 @@ module Taxi
   class Config
     include Singleton
 
-    attr_reader :aws_config, :sftp_config
+    attr_reader :aws_config, :sftp_config, :cache_dir
 
     # Outputs currently loaded config.
     def print
@@ -20,6 +20,9 @@ module Taxi
 
       puts '= AWS Settings (updated)'.yellow
       ap Aws.config
+
+      puts '? Misc'.cyan
+      puts "Cache dir: #{@cache_dir.redish}"
     end
 
     private
@@ -50,6 +53,8 @@ module Taxi
         region: @aws_config.region
       )
       Aws.use_bundled_cert!
+
+      @cache_dir = File.expand_path(ENV['TAXI_CACHE']) || File.join(Dir.tmpdir, 'taxi', 'cache')
     end
   end
 end
