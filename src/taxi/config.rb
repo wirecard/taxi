@@ -4,12 +4,23 @@ require 'singleton'
 require 'ostruct'
 require 'amazing_print'
 require 'aws-sdk-s3'
+require 'fileutils'
 
 module Taxi
   class Config
     include Singleton
 
-    attr_reader :aws_config, :sftp_config, :cache_dir
+    attr_reader :aws_config, :sftp_config
+
+    # forward missing static method to instance
+    def self.method_missing(method_name, *arguments)
+      instance.send(method_name, *arguments)
+    end
+
+    def cache_dir
+      FileUtils.mkdir_p(@cache_dir)
+      @cache_dir
+    end
 
     # Outputs currently loaded config.
     def print

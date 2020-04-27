@@ -2,12 +2,20 @@
 
 require 'tmpdir'
 require 'zlib'
+require 'fileutils'
+require 'date'
+require 'progressbar'
 
 require 'taxi/config'
 
 module Taxi
   class S3
     include Singleton
+
+    # forward missing static method to instance
+    def self.method_missing(method_name, *arguments)
+      instance.send(method_name, *arguments)
+    end
 
     def list_buckets
       puts '> AWS Buckets'.yellow
@@ -32,29 +40,29 @@ module Taxi
       end
     end
 
-    def get(bucket)
+    def download(bucket, dir)
       puts "> AWS Bucket: get #{bucket}".yellow
       s3 = s3_client
 
       # get list of objects
       response = s3.list_objects_v2(bucket: bucket)
-      objects = response.contents
+      files = response.contents.map(&:key)
       # get tmp dir to save data to
-      Dir.tmpdir do |dir|
-        Dir.chdir(dir) do
-          objects.content.each do |obj|
-            s3.get_object(
-              response_target: obj.key,
-              bucket: bucket,
-              key: obj.key
-            )
-          end
-          puts Dir.glob('**/*')
-          # TODO .tar.gz the tmpdir to $CACHE
+      puts "> Starting download to #{dir.white}".green
+
+      progress = ProgressBar.create(title: 'AWS::Get'.green, total: files.size)
+      Dir.chdir(dir) do
+        files.each do |file|
+          FileUtils.mkdir_p(File.dirname(file))
+          s3.get_object(
+            response_target: file,
+            bucket: bucket,
+            key: file
+          )
+          progress.increment
         end
-
       end
-
+      progress.finish unless progress.finished?
     end
 
     private
