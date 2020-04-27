@@ -41,7 +41,7 @@ The package subcommand provides an interface to create, upload and deploy transl
 
     desc 'check-bucket <bucket>', 'Checks the provided bucket <bucket> and lists the files'
     def check_bucket(bucket)
-      puts Config.instance.aws_s3_client.list_objects_v2(bucket: bucket)
+      Config.instance.ls(bucket) # .aws_s3_client.list_objects_v2(bucket: bucket)
     end
 
     desc 'list-buckets', 'List buckets'

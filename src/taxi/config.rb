@@ -22,11 +22,26 @@ module Taxi
       ap Aws.config
     end
 
+    def ls(bucket)
+      puts "> AWS Bucket: ls #{bucket}".yellow
+      response = aws_s3_client.list_objects_v2(bucket: bucket)
+      files = response.contents
+      files_str = files.map do |entry|
+        "#{entry.last_modified.to_s.greenish}\t#{entry.size.to_s.blueish}\t#{entry.key.yellow}"
+      end
+      # ap files_str
+      files_str.each do |entry|
+        puts entry
+      end
+    end
+
     def list_buckets
-      puts '* AWS Buckets'.yellow
-      s3 = aws_s3_client
-      ap s3
-      ap s3.list_buckets
+      puts '> AWS Buckets'.yellow
+      response = aws_s3_client.list_buckets
+      buckets = response.buckets.map do |bucket|
+        { name: bucket.name, creation_date: bucket.creation_date }
+      end
+      ap buckets
     end
 
     def aws_assume_role
@@ -36,15 +51,6 @@ module Taxi
         { key: key, value: value }
       end
 
-      ###
-      # Create Role Credentials with AssumeRole ARN
-      ###
-      # @aws_sts_client.assume_role(
-      #   role_arn: @aws_config.role_assume,
-      #   role_session_name: 'github://wirecard/taxi',
-      #   duration_seconds: 1200,
-      #   tags: tags
-      # )
       Aws::AssumeRoleCredentials.new(
         client: @aws_sts_client,
         role_arn: @aws_config.role_assume,
@@ -62,7 +68,6 @@ module Taxi
         http_proxy: ENV['AWS_HTTP_PROXY']
         # disable_host_prefix_injection: true,
       )
-      ap s3
       s3
     end
 
