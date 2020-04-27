@@ -16,3 +16,5 @@ gem "aws-sdk-s3", "~> 1.63"
 gem "colorize", "~> 0.8.1"
 
 gem "amazing_print", "~> 1.0"
+
+gem 'net-sftp', '~> 3.0.0.rc1'

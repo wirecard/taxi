@@ -21,6 +21,9 @@ GEM
     colorize (0.8.1)
     dotenv (2.7.5)
     jmespath (1.4.0)
+    net-sftp (3.0.0.rc1)
+      net-ssh (>= 5.0.0, < 7.0.0)
+    net-ssh (6.0.2)
     rake (13.0.1)
     thor (1.0.1)
 
@@ -32,6 +35,7 @@ DEPENDENCIES
   aws-sdk-s3 (~> 1.63)
   colorize (~> 0.8.1)
   dotenv (~> 2.7)
+  net-sftp (~> 3.0.0.rc1)
   rake (~> 13.0)
   thor (~> 1.0)
 
