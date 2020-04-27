@@ -9,6 +9,12 @@ module Taxi
       end
     end
 
+    def file_exists?(path)
+      dirname = File.dirname(path)
+      filename = File.basename(path)
+      list_dir(dirname).include? filename
+    end
+
     private
 
     def initialize
