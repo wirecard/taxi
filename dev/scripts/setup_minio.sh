@@ -5,6 +5,8 @@ HOST=s3
 BUCKETS="wcd nov pdo cps mps"
 LOG=/dev/null
 
+sleep 3
+
 mc config host add ${HOST} http://${HOST}:9000 "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}" --api S3v4
 
 cat > allowall.json << EOF

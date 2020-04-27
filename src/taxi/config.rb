@@ -4,12 +4,23 @@ require 'singleton'
 require 'ostruct'
 require 'amazing_print'
 require 'aws-sdk-s3'
+require 'fileutils'
 
 module Taxi
   class Config
     include Singleton
 
     attr_reader :aws_config, :sftp_config
+
+    # forward missing static method to instance
+    def self.method_missing(method_name, *arguments)
+      instance.send(method_name, *arguments)
+    end
+
+    def cache_dir
+      FileUtils.mkdir_p(@cache_dir)
+      @cache_dir
+    end
 
     # Outputs currently loaded config.
     def print
@@ -20,6 +31,9 @@ module Taxi
 
       puts '= AWS Settings (updated)'.yellow
       ap Aws.config
+
+      puts '? Misc'.cyan
+      puts "Cache dir: #{@cache_dir.redish}"
     end
 
     private
@@ -50,6 +64,8 @@ module Taxi
         region: @aws_config.region
       )
       Aws.use_bundled_cert!
+
+      @cache_dir = File.expand_path(ENV['TAXI_CACHE']) || File.join(Dir.tmpdir, 'taxi', 'cache')
     end
   end
 end

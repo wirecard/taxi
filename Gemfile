@@ -17,4 +17,9 @@ gem "colorize", "~> 0.8.1"
 
 gem "amazing_print", "~> 1.0"
 
+gem "zlib", "~> 1.1"
+
+gem "progressbar", "~> 1.10"
+
 gem 'net-sftp', '~> 3.0.0.rc1'
+

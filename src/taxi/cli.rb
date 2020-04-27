@@ -3,14 +3,19 @@
 require 'thor'
 require 'taxi/config'
 require 'taxi/connector/aws'
+
+require 'taxi/commands/package'
+require 'taxi/commands/status'
+
 require 'taxi/connector/sftp'
+
 
 module Taxi
   module SubCLI
-    class Package < Thor
-      desc 'make <name> <s3>', 'Create a translation package for <s3> named <name>'
-      def make(name, s3)
-        puts "make #{name} #{s3}"
+    class PackageCommand < Thor
+      desc 'make <name>', 'Create a translation package for <s3> named <name>'
+      def make(name)
+        ::Taxi::Package.make(name)
       end
 
       desc 'translate <name> <language>', 'Upload the translation package <name> to SFTP to be translated to <language>'
@@ -33,7 +38,7 @@ module Taxi
     long_desc <<~LONGDESC
       The package subcommand provides an interface to create, upload and deploy translation packages.
     LONGDESC
-    subcommand 'package', SubCLI::Package
+    subcommand 'package', SubCLI::PackageCommand
 
     desc 'status', 'Checks translation packages for reviews and outstanding deployments'
     option :package, type: :string
