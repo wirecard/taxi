@@ -7,7 +7,7 @@ module Taxi
 
     def ls(bucket)
       puts "> AWS Bucket: ls #{bucket}".yellow
-      response = @s3.list_objects_v2(bucket: bucket)
+      response = @s3_client.list_objects_v2(bucket: bucket)
       files = response.contents
       files_str = files.map do |entry|
         "#{entry.last_modified.to_s.greenish}\t#{entry.size.to_s.blueish}\t#{entry.key.yellow}"
@@ -19,7 +19,7 @@ module Taxi
 
     def list_buckets
       puts '> AWS Buckets'.yellow
-      response = @s3.list_buckets
+      response = @s3_client.list_buckets
       buckets = response.buckets.map do |bucket|
         "#{bucket.name.yellow} - created: #{bucket.creation_date.to_s.greenish}"
       end
@@ -31,7 +31,7 @@ module Taxi
     private
 
     def initialize
-      @s3 = Config.instance.aws_s3_client
+      @s3_client = Config.instance.aws_s3_client
     end
   end
 end
