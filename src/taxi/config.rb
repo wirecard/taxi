@@ -22,27 +22,17 @@ module Taxi
       ap Aws.config
     end
 
-    def ls(bucket)
-      puts "> AWS Bucket: ls #{bucket}".yellow
-      response = aws_s3_client.list_objects_v2(bucket: bucket)
-      files = response.contents
-      files_str = files.map do |entry|
-        "#{entry.last_modified.to_s.greenish}\t#{entry.size.to_s.blueish}\t#{entry.key.yellow}"
-      end
-      # ap files_str
-      files_str.each do |entry|
-        puts entry
-      end
+    def aws_s3_client
+      role_credentials = aws_assume_role
+      s3 = Aws::S3::Client.new(
+        credentials: role_credentials,
+        force_path_style: true,
+        http_proxy: ENV['AWS_HTTP_PROXY']
+      )
+      s3
     end
 
-    def list_buckets
-      puts '> AWS Buckets'.yellow
-      response = aws_s3_client.list_buckets
-      buckets = response.buckets.map do |bucket|
-        { name: bucket.name, creation_date: bucket.creation_date }
-      end
-      ap buckets
-    end
+    private
 
     def aws_assume_role
       tags = ['client TAXI', 'repository wirecard/taxi', 'team tecodc']
@@ -59,19 +49,6 @@ module Taxi
         tags: tags
       )
     end
-
-    def aws_s3_client
-      role_credentials = aws_assume_role
-      s3 = Aws::S3::Client.new(
-        credentials: role_credentials,
-        force_path_style: true,
-        http_proxy: ENV['AWS_HTTP_PROXY']
-        # disable_host_prefix_injection: true,
-      )
-      s3
-    end
-
-    private
 
     def initialize
       aws_config = {

@@ -2,6 +2,7 @@
 
 require 'thor'
 require 'taxi/config'
+require 'taxi/connector/aws'
 
 module Taxi
   module SubCLI
@@ -39,14 +40,14 @@ The package subcommand provides an interface to create, upload and deploy transl
       puts 'status'
     end
 
-    desc 'check-bucket <bucket>', 'Checks the provided bucket <bucket> and lists the files'
-    def check_bucket(bucket)
-      Config.instance.ls(bucket) # .aws_s3_client.list_objects_v2(bucket: bucket)
+    desc 'ls <bucket>', 'Checks the provided bucket <bucket> and lists the files'
+    def ls(bucket)
+      ::Taxi::S3.instance.ls(bucket) # .aws_s3_client.list_objects_v2(bucket: bucket)
     end
 
-    desc 'list-buckets', 'List buckets'
-    def list_buckets
-      Config.instance.list_buckets
+    desc 'list', 'List buckets'
+    def list
+      ::Taxi::S3.instance.list_buckets
     end
 
     desc 'config', 'Output the currently loaded config'
