@@ -1,9 +1,24 @@
 # frozen_string_literal: true
+
+require 'tmpdir'
+require 'zlib'
+
 require 'taxi/config'
 
 module Taxi
   class S3
     include Singleton
+
+    def list_buckets
+      puts '> AWS Buckets'.yellow
+      response = s3_client.list_buckets
+      buckets = response.buckets.map do |bucket|
+        "#{bucket.name.yellow} - created: #{bucket.creation_date.to_s.greenish}"
+      end
+      buckets.each do |bucket|
+        puts bucket
+      end
+    end
 
     def ls(bucket)
       puts "> AWS Bucket: ls #{bucket}".yellow
@@ -17,15 +32,29 @@ module Taxi
       end
     end
 
-    def list_buckets
-      puts '> AWS Buckets'.yellow
-      response = s3_client.list_buckets
-      buckets = response.buckets.map do |bucket|
-        "#{bucket.name.yellow} - created: #{bucket.creation_date.to_s.greenish}"
+    def get(bucket)
+      puts "> AWS Bucket: get #{bucket}".yellow
+      s3 = s3_client
+
+      # get list of objects
+      response = s3.list_objects_v2(bucket: bucket)
+      objects = response.contents
+      # get tmp dir to save data to
+      Dir.tmpdir do |dir|
+        Dir.chdir(dir) do
+          objects.content.each do |obj|
+            s3.get_object(
+              response_target: obj.key,
+              bucket: bucket,
+              key: obj.key
+            )
+          end
+          puts Dir.glob('**/*')
+          # TODO .tar.gz the tmpdir to $CACHE
+        end
+
       end
-      buckets.each do |bucket|
-        puts bucket
-      end
+
     end
 
     private
