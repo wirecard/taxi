@@ -3,8 +3,12 @@
 require 'thor'
 require 'taxi/config'
 require 'taxi/connector/aws'
+
 require 'taxi/commands/package'
 require 'taxi/commands/status'
+
+require 'taxi/connector/sftp'
+
 
 module Taxi
   module SubCLI
@@ -31,8 +35,8 @@ module Taxi
     option :debug, type: :boolean
 
     desc 'package SUBCOMMAND ...ARGS', 'Package operations'
-    long_desc <<-LONGDESC
-The package subcommand provides an interface to create, upload and deploy translation packages.
+    long_desc <<~LONGDESC
+      The package subcommand provides an interface to create, upload and deploy translation packages.
     LONGDESC
     subcommand 'package', SubCLI::PackageCommand
 
