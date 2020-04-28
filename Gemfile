@@ -26,3 +26,5 @@ gem 'net-sftp', '~> 3.0.0.rc1'
 
 gem "ed25519", "~> 1.2"
 gem "bcrypt_pbkdf", "~> 1.0"
+
+gem "minitar", "~> 0.9"

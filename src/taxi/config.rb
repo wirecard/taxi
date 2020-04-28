@@ -7,6 +7,13 @@ require 'aws-sdk-s3'
 require 'fileutils'
 
 module Taxi
+  module DirConfig
+    OPEN = '1_open'
+    REVIEW = '2_review'
+    DEPLOY = '3_deploy'
+    DONE = '4_done'
+  end
+
   class Config
     include Singleton
 
@@ -17,9 +24,13 @@ module Taxi
       instance.send(method_name, *arguments)
     end
 
-    def cache_dir
+    def cache_dir(file = nil)
       FileUtils.mkdir_p(@cache_dir)
-      @cache_dir
+      if file.nil?
+        @cache_dir
+      else
+        File.join(@cache_dir, file)
+      end
     end
 
     # Outputs currently loaded config.

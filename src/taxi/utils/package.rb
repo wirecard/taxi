@@ -4,10 +4,8 @@ require 'taxi/config'
 
 module Taxi
   module Utils
-    def self.folder_structure(package_name, from: 'en_US', to: nil)
-      packages = Dir.glob("#{package_name}-*", base: Config.cache_dir)
-      # TODO is the first package always the newest?
-      pkg = packages.first
+    def self.folder_structure(pkg_name, from: 'en_US', to: nil)
+      pkg = get_latest_package(pkg_name)
       basename = File.basename(pkg, '.tar.gz')
       name, date = basename.split('-')
       # return folder structure as array
@@ -15,9 +13,15 @@ module Taxi
       return [name, to, date]
     end
 
-    def self.dated_package_name(name)
+    def self.get_latest_package(pkg_name)
+      packages = Dir.glob("#{pkg_name}-*", base: Config.cache_dir)
+      # TODO is the first package always the newest?
+      return packages.first
+    end
+
+    def self.dated_package_name(pkg_name)
       today = Date.today.strftime('%Y%m%d')
-      "#{name}-#{today}"
+      "#{pkg_name}-#{today}"
     end
   end
 end
