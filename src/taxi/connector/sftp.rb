@@ -64,8 +64,6 @@ module Taxi
       options[:user_known_hosts_file] = '/dev/null' if ENV.key?('DEV_ENV')
       options[:verbose] = ENV['LOGLEVEL']&.to_sym || :error
       @sftp = Net::SFTP.start(sftp_config.host, sftp_config.user, options)
-    rescue Net::SFTP::StatusException => e
-      pp e
     end
   end
 end

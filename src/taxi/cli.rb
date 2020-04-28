@@ -19,8 +19,9 @@ module Taxi
       end
 
       desc 'translate <name> <from> <to>', 'Upload the translation package <name> to SFTP to be translated to from language <from> to <to>'
-      def translate(name, language)
-        puts "translate #{name} #{language}"
+      def translate(name, from, to)
+        puts "translate #{name} from: #{from} to: #{to}"
+        ::Taxi::Package.translate(name, to)
       end
 
       desc 'deploy <id> <language>', 'Deploy translation package named ID to S3'
