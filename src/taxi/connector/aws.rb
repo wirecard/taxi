@@ -72,7 +72,7 @@ module Taxi
       s3 = Aws::S3::Client.new(
         credentials: role_credentials,
         force_path_style: true,
-        http_proxy: ENV['AWS_HTTP_PROXY']
+        http_proxy: ENV['TAXI_HTTP_PROXY']
       )
       s3
     end

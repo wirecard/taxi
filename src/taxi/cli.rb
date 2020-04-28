@@ -18,7 +18,7 @@ module Taxi
         ::Taxi::Package.make(name)
       end
 
-      desc 'translate <name> <language>', 'Upload the translation package <name> to SFTP to be translated to <language>'
+      desc 'translate <name> <from> <to>', 'Upload the translation package <name> to SFTP to be translated to from language <from> to <to>'
       def translate(name, language)
         puts "translate #{name} #{language}"
       end
@@ -27,6 +27,25 @@ module Taxi
       option :remove, type: :boolean
       def deploy(id, language)
         puts "deploy #{id} #{language}"
+      end
+    end
+
+    class BucketCommand < Thor
+      desc 'ls <bucket>', 'List files on the provided bucket <bucket>'
+      def ls(bucket)
+        ::Taxi::S3.instance.ls(bucket)
+      end
+
+      desc 'list', 'List buckets'
+      def list
+        ::Taxi::S3.instance.list_buckets
+      end
+    end
+
+    class SFTPCommand < Thor
+      desc 'ls', 'List files on the SFTP server'
+      def ls
+        ::Taxi::SFTP.instance.ls
       end
     end
   end
@@ -40,20 +59,16 @@ module Taxi
     LONGDESC
     subcommand 'package', SubCLI::PackageCommand
 
+    desc 'bucket SUBCOMMAND ...ARGS', 'Bucket operations'
+    subcommand 'bucket', SubCLI::BucketCommand
+
+    desc 'sftp SUBCOMMAND ...ARGS', 'SFTP operations'
+    subcommand 'sftp', SubCLI::SFTPCommand
+
     desc 'status', 'Checks translation packages for reviews and outstanding deployments'
     option :package, type: :string
     def status
       puts 'status'
-    end
-
-    desc 'ls <bucket>', 'Checks the provided bucket <bucket> and lists the files'
-    def ls(bucket)
-      ::Taxi::S3.instance.ls(bucket) # .aws_s3_client.list_objects_v2(bucket: bucket)
-    end
-
-    desc 'list', 'List buckets'
-    def list
-      ::Taxi::S3.instance.list_buckets
     end
 
     desc 'config', 'Output the currently loaded config'

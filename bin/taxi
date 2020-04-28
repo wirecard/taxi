@@ -10,7 +10,7 @@ Dotenv.load if ENV.key?('DEV_ENV')
 # Needs AWS_* env vars
 Dotenv.require_keys('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_REGION')
 # Needs SFTP env vars
-Dotenv.require_keys('SFTP_USER', 'SFTP_HOST', 'SFTP_PORT')
+Dotenv.require_keys('SFTP_USER', 'SFTP_HOST', 'SFTP_PORT', 'SFTP_KEYS')
 
 require 'taxi'
 

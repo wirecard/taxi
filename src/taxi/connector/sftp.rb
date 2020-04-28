@@ -9,7 +9,10 @@ module Taxi
     end
 
     def file_upload(src, dest)
-      file_put_data(dest, File.read(src))
+      create_dir(dest)
+      # not used path.join as we always need '/' on sftp as separator
+      remote_filepath = dest + '/' + File.basename(src)
+      file_put_data(remote_filepath, File.read(src))
     end
 
     def file_exists?(path)
@@ -18,54 +21,51 @@ module Taxi
       return list_dir(dirname).include? filename
     end
 
-    def create_dir(path)
-      
+    def create_dir(remote_dir)
+      dir = []
+      remote_dir.split('/').foreach do |part|
+        dir << part
+        @sftp.mkdir(dir.join('/')).wait
+      end
     end
 
-    def list_dir(path = '/')
+    def ls(path = '/')
       @sftp.dir.foreach(path) do |element|
-        pp element
+        puts element.longname
       end
     end
 
     def file_get_data(path)
-      begin
-        data = @sftp.download!(path)
-      rescue Net::SFTP::StatusException => e
-        pp e
-      end
-      return data
+      @sftp.download!(path)
     end
 
     def file_put_data(path, data)
       if file_exists?(path)
         puts "file #{path} exists. skipping"
       else
-        begin
-          @sftp.file.open(path, 'w') do |file|
-            file.puts data
-          end
-        rescue Net::SFTP::StatusException => e
-          pp e
+        dir = File.dirname(path)
+        create_dir(dir)
+        @sftp.file.open(path, 'w') do |file|
+          file.puts data
         end
-        return file_exists?(path)
       end
     end
 
     private
 
     def initialize
-      sftp_config = ::Taxi::Config.sftp_config
-      begin
-        @sftp = Net::SFTP.start(
-          sftp_config.host + ':' + sftp_config.port, sftp_config.user,
-          key_data: [sftp_config.key],
-          keys: [],
-          keys_only: true
-        )
-      rescue Net::SFTP::StatusException => e
-        pp e
-      end
+      sftp_config = Config.sftp_config
+      options = {
+        port: sftp_config.port,
+        keys: sftp_config.keys,
+        keys_only: true,
+        use_agent: false,
+      }
+      options[:user_known_hosts_file] = '/dev/null' if ENV.key?('DEV_ENV')
+      options[:verbose] = ENV['LOGLEVEL']&.to_sym || :error
+      @sftp = Net::SFTP.start(sftp_config.host, sftp_config.user, options)
+    rescue Net::SFTP::StatusException => e
+      pp e
     end
   end
 end

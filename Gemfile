@@ -23,3 +23,6 @@ gem "progressbar", "~> 1.10"
 
 gem 'net-sftp', '~> 3.0.0.rc1'
 
+
+gem "ed25519", "~> 1.2"
+gem "bcrypt_pbkdf", "~> 1.0"

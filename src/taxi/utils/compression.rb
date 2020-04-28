@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'zlib'
+require 'rubygems/package'
 
 module Taxi
   # https://stackoverflow.com/questions/13943860/compress-a-complete-directory-in-ruby-with-zlib

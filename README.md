@@ -28,15 +28,15 @@ There are 4 stages in the translation workflow:
 Overall file structure:
 ```
 SFTP/
-- open/
-- review/
-- deploy/
-- done/
+- 1_open/
+- 2_review/
+- 3_deploy/
+- 4_done/
 ```
 
 For each category, the following file structure must be present:
 ```
-- open/
+- 1_open/
   - <project>/
     - 2020-04-22/
       - ru_RU/
@@ -59,10 +59,10 @@ This section describes the setup of a development environment.
 
 ### Setup
 
-**Run once:** Generate SSH keys for the users
+**Run once:** Generate SSH keys for the users and setup folder structure
 ```sh
 cd dev/
-./generate_keys.sh
+./init.sh
 ```
 
 **Start infrastructure**
@@ -70,17 +70,29 @@ cd dev/
 docker-compose -f dev/docker-compose.yml up
 ```
 
-### Access
-Log into the SFTP server:
+**Stop infrastructure**
 ```sh
-sftp -P 2222 -i sftp-keys/agency_rsa_key agency@localhost
+docker-compose -f dev/docker-compose.yml down --remove-orphans
 ```
 
-S3 Access - Web interface or resources:
+### Access
+
+#### SFTP server
+Login via Terminal
+```sh
+sftp -P 2222 -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no -i sftp-keys/agency_rsa_key agency@localhost
+```
+
+#### S3 Bucket Web Interface
+Access the Administration Interface
 ```sh
 open http://localhost:9000
-# or
-open http://localhost:9000/path/to/document
+```
+
+#### S3 Bucket Webserver
+Directly access files in your-bucket through the webserver
+```
+open http://localhost:8888/your-name/path/to/document
 ```
 
 ### AWS CLI
@@ -94,6 +106,31 @@ The credentials that need to be used for `aws configure --profile minio` are:
 * Access Key ID: `myuser`
 * Secret Access Key: `myuserletmein`
 * Region: eu-central-1
+
+#### Sample Configuration
+Add to your `~/.aws/config`
+```
+[profile minio]
+region = eu-central-1
+output = text
+signature_version = s3v4
+
+[profile minio-myuser]
+source_profile = minio
+region = eu-central-1
+output = text
+```
+
+Add to your `~/.aws/credentials`
+```
+[minio]
+aws_access_key_id = minio
+aws_secret_access_key = letmeinplease
+
+[minio-myuser]
+aws_access_key_id = myuser
+aws_secret_access_key = myuserletmein
+```
 
 Once the AWS CLI has been configured, create a bucket:
 1. First, create a bucket
