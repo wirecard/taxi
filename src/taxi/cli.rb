@@ -3,24 +3,26 @@
 require 'thor'
 require 'taxi/config'
 require 'taxi/connector/aws'
+require 'taxi/connector/sftp'
 
 require 'taxi/commands/package'
 require 'taxi/commands/status'
 
-require 'taxi/connector/sftp'
+require 'taxi/utils/log'
 
 
 module Taxi
   module SubCLI
     class PackageCommand < Thor
-      desc 'make <name>', 'Create a translation package for <s3> named <name>'
+      desc 'make <name>', 'Create a translation package for <name>'
       def make(name)
+        Log.info("package make name=#{name}")
         ::Taxi::Package.make(name)
       end
 
       desc 'translate <name> <from> <to>', 'Upload the translation package <name> to SFTP to be translated to from language <from> to <to>'
       def translate(name, from, to)
-        puts "translate #{name} from: #{from} to: #{to}"
+        Log.info("package translate name=#{name} from=#{from} to=#{to}")
         ::Taxi::Package.translate(name, to)
       end
 

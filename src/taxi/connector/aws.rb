@@ -7,6 +7,7 @@ require 'date'
 require 'progressbar'
 
 require 'taxi/config'
+require 'taxi/utils/log'
 
 module Taxi
   class S3
@@ -48,7 +49,8 @@ module Taxi
       response = s3.list_objects_v2(bucket: bucket)
       files = response.contents.map(&:key)
       # get tmp dir to save data to
-      puts "> Starting download to #{dir.white}".green
+      Log.debug("S3 download to  #{dir}")
+      puts '> S3 Download'.green
 
       progress = ProgressBar.create(title: '  AWS::Get'.green, total: files.size)
       Dir.chdir(dir) do

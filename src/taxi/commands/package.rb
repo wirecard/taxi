@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'taxi/config'
 require 'taxi/connector/aws'
+require 'taxi/connector/sftp'
 require 'taxi/utils/compression'
 require 'taxi/utils/package'
 
@@ -10,27 +11,34 @@ module Taxi
       Dir.mktmpdir do |dir|
         ::Taxi::S3.download(bucket, dir)
 
-        filepath = File.join(
+        package_name = Utils.dated_package_name(bucket)
+        file_path = File.join(
           Config.cache_dir,
-          "#{Utils.dated_package_name(bucket)}.tar.gz"
+          "#{package_name}.tar.gz"
         )
-        targzfile = Compression.targz(dir)
 
-        File.write(filepath, targzfile)
-        puts "> Package written: #{filepath.whiteish}".green
+        Dir.chdir(dir) do
+          Compression.targz('.', file_path)
+        end
+        puts "> Package created: #{package_name.blue}".green
       end
     end
 
     def self.translate(name, language_code)
-      puts Utils.folder_structure(name, to: language_code)
-      raise NotImplementedError.new('package translate')
+      puts '> SFTP translate'.blue
 
-      # deprecated
-      # filename = generate_filename(name, language_code)
-      # local_filepath = File.join(Config.cache_dir, filename)
-      # dest = remote_dirname(name, language_code)
-      # ::Taxi::SFTP.file_upload(local_filepath, dest)
+      name, lang, date = Utils.folder_structure(name, to: language_code)
+      folders = File.join(name, lang, date)
+      package = Utils.get_latest_package(name)
+      package_path = Config.cache_dir(package)
+
+      puts "> Package: #{folders.blue}".green
+      Dir.mktmpdir do |dir|
+        Log.info("targz unpack: #{package} -> #{dir}")
+        Compression.untargz(package_path, dir)
+
+        ::Taxi::SFTP.upload(dir, folders)
+      end
     end
-
   end
 end
