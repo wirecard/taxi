@@ -16,7 +16,7 @@ module Taxi
     def self.get_latest_package(pkg_name)
       packages = Dir.glob("#{pkg_name}-*", base: Config.cache_dir)
       # TODO is the first package always the newest?
-      return packages.first
+      return packages.max # same as .sort.last
     end
 
     def self.dated_package_name(pkg_name)
