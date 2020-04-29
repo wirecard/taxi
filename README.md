@@ -13,7 +13,7 @@ bundle exec bin/taxi --help
 ```sh
 bundle exec bin/taxi
 ```
-To run the binary in development mode, set the environment variable `DEV_ENV` which will load `.env` at startup.
+To run `taxi` in development mode, set the environment variable `DEV_ENV` which will load `.env` at startup.
 
 ## Translations
 
