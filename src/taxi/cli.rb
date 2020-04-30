@@ -13,6 +13,17 @@ require 'taxi/utils/log'
 
 module Taxi
   module SubCLI
+    class ReviewCommand < Thor
+      desc 'open <name> <language>', 'Download translated package (<name> translated to <language>) to cache'
+      def open(name, language)
+        ::Taxi::SFTP.download(name, to: language)
+      end
+
+      desc 'pass <name> <language>', 'Mark this package <name> to <language> as review passed'
+      def pass(name, language)
+      end
+    end
+
     class PackageCommand < Thor
       desc 'make <name>', 'Create a translation package for <name>'
       def make(name)
@@ -67,6 +78,9 @@ module Taxi
 
     desc 'sftp SUBCOMMAND ...ARGS', 'SFTP operations'
     subcommand 'sftp', SubCLI::SFTPCommand
+
+    desc 'review SUBCOMMAND ...ARGS', 'SFTP operations'
+    subcommand 'review', SubCLI::ReviewCommand
 
     desc 'status', 'Checks translation packages for reviews and outstanding deployments'
     option :package, type: :string
