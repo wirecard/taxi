@@ -5,6 +5,7 @@ require 'progressbar'
 require 'fileutils'
 
 require 'taxi/utils/log'
+require 'taxi/utils/progressbar'
 
 module Taxi
   class SFTP
@@ -21,14 +22,18 @@ module Taxi
       end
     end
 
+    def move(from, to)
+      @sftp.rename!(from, to)
+    end
+
     def remove(dir, category: DirConfig::OPEN, path: File.join('/share', category))
       cpath = File.join(path, dir)
 
       begin
-      file_list = []
-      @sftp.dir.glob(cpath, '**/*') do |entry|
-        file_list << entry
-      end
+        file_list = []
+        @sftp.dir.glob(cpath, '**/*') do |entry|
+          file_list << entry
+        end
       rescue Net::SFTP::StatusException => status_ex
         return if status_ex.code == 2
 
@@ -74,33 +79,38 @@ module Taxi
     #   end
     # end
 
-    def download(name, from: 'en_US', to: 'en_US', category: DirConfig::REVIEW)
-      Log.info("SFTP Download [REVIEW OPEN] #{name} :: #{from} -> #{to}")
+    def download(package, category: DirConfig::REVIEW)
+      Log.info("SFTP Download [REVIEW OPEN] #{package}")
 
       remote_review_dir = File.join('/share', category)
       local_review_dir = Config.cache_dir('review')
 
-      package_name = Utils.get_package_name(name, from, to)
-
       puts '> SFTP Download'.green
-      puts "                DOWNLOAD FOLDER = #{local_dir}".blue
-      puts "                PACKAGE = #{package_name}".blue
+      puts "                DOWNLOAD FOLDER = #{local_review_dir}".blue
+      puts "                PACKAGE = #{package}".blue
 
-      remote_path = File.join(remote_review_dir, package_name)
-      local_path = File.join(local_review_dir, package_name)
+      remote_path = File.join(remote_review_dir, package)
+      local_path = File.join(local_review_dir, package)
       FileUtils.rm_r(local_path) if Dir.exists?(local_path)
       FileUtils.mkdir_p(local_path)
 
-      # TODO add progressbar
       begin
-        @sftp.download!(remote_path, local_path, recursive: true)
-      rescue Net::SFTP::StatusException => status_ex
+        files = []
+        puts '> SFTP Query: getting file index...'.green
+        @sftp.dir.glob(remote_path, '**/*') { |file| files << file }
+        # add 1 to size because the download counts the current directory,
+        # unlike the glob operation
+        progress = Utils::ProgressBarHandler
+          .new('  SFTP:download'.green, files.size + 1)
+        @sftp.download!(remote_path, local_path, recursive: true, progress: progress)
+
+      rescue Net::SFTP::StatusException => e
         if status_ex.code == 2
           puts '! ERROR'.red
-          puts status_ex.message.red
-          abort "Error: #{status_ex.message}"
+          puts e.message.red
+          abort "Error: #{e.message}"
         end
-        raise status_ex
+        raise e
       end
 
       puts '> SFTP Download finished'.green

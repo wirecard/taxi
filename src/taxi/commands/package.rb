@@ -29,7 +29,7 @@ module Taxi
     def self.translate(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
       puts '> SFTP translate'.blue
 
-      remote_package = Utils.get_package_name(name, to: to)
+      remote_package = Utils.get_package_name(name, from: from, to: to)
       local_package = Utils.get_latest_package(name)
       package_path = Config.cache_dir(local_package)
 
@@ -44,7 +44,15 @@ module Taxi
     end
 
     def self.review_inspect(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
-      ::Taxi::SFTP.download(name, from: from, to: to)
+      package_name = Utils.get_package_name(name, from: from, to: to)
+      ::Taxi::SFTP.download(package_name)
+    end
+
+    def self.review_pass(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
+      package_name = Utils.get_package_name(name, from: from, to: to)
+      from_dir = File.join('/share', DirConfig::REVIEW, package_name)
+      to_dir = File.join('/share', DirConfig::DEPLOY, package_name)
+      ::Taxi::SFTP.move(from_dir, to_dir)
     end
   end
 end
