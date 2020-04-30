@@ -2,6 +2,7 @@
 
 require 'net/sftp'
 require 'progressbar'
+require 'fileutils'
 
 require 'taxi/utils/log'
 
@@ -18,6 +19,91 @@ module Taxi
       @sftp.dir.foreach(path) do |element|
         puts element.longname
       end
+    end
+
+    def remove(dir, category: DirConfig::OPEN, path: File.join('/share', category))
+      cpath = File.join(path, dir)
+
+      begin
+      file_list = []
+      @sftp.dir.glob(cpath, '**/*') do |entry|
+        file_list << entry
+      end
+      rescue Net::SFTP::StatusException => status_ex
+        return if status_ex.code == 2
+
+        raise status_ex
+      end
+
+      puts '> SFTP Remove started'.purple
+      file_list.sort! { |a,b| b.name.count('/') <=> a.name.count('/') }
+
+      progressbar = ProgressBar.create(
+        title: '  SFTP:remove'.purple, total: file_list.size)
+      file_list.each do |entry|
+        fpath = File.join(cpath, entry.name)
+        Log.debug("remove remote://#{fpath}")
+        entry.directory? ? @sftp.rmdir!(fpath) : @sftp.remove(fpath)
+        progressbar.increment
+      end
+      puts '> SFTP Remove finished'.purple
+    end
+
+    # DEPRECATED
+    # def rmdir(dir, category: DirConfig::OPEN, path: File.join('/share', category))
+    #   cpath = File.join(path, dir)
+    #   puts "* #{cpath}"
+
+    #   if exists?(cpath)
+    #     @sftp.dir.foreach(cpath) do |entry|
+    #       name = entry.name
+    #       unless %w[. ..].include?(name)
+    #         puts ". #{name}"
+    #         entry_path = File.join(cpath, name)
+
+    #         if entry.directory?
+    #           rmdir(name, path: cpath)
+    #           Log.debug("rmdir remote://#{entry_path}")
+    #           @sftp.rmdir!(entry_path)
+    #         else
+    #           Log.debug("rm remote://#{entry_path}")
+    #           @sftp.remove(entry_path)
+    #         end
+    #       end
+    #     end
+    #   end
+    # end
+
+    def download(name, from: 'en_US', to: 'en_US', category: DirConfig::REVIEW)
+      Log.info("SFTP Download [REVIEW OPEN] #{name} :: #{from} -> #{to}")
+
+      remote_review_dir = File.join('/share', category)
+      local_review_dir = Config.cache_dir('review')
+
+      package_name = Utils.get_package_name(name, from, to)
+
+      puts '> SFTP Download'.green
+      puts "                DOWNLOAD FOLDER = #{local_dir}".blue
+      puts "                PACKAGE = #{package_name}".blue
+
+      remote_path = File.join(remote_review_dir, package_name)
+      local_path = File.join(local_review_dir, package_name)
+      FileUtils.rm_r(local_path) if Dir.exists?(local_path)
+      FileUtils.mkdir_p(local_path)
+
+      # TODO add progressbar
+      begin
+        @sftp.download!(remote_path, local_path, recursive: true)
+      rescue Net::SFTP::StatusException => status_ex
+        if status_ex.code == 2
+          puts '! ERROR'.red
+          puts status_ex.message.red
+          abort "Error: #{status_ex.message}"
+        end
+        raise status_ex
+      end
+
+      puts '> SFTP Download finished'.green
     end
 
     def upload(src, dst, base = File.join('/share', DirConfig::OPEN))

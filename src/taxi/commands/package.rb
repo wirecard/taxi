@@ -6,6 +6,7 @@ require 'taxi/utils/compression'
 require 'taxi/utils/package'
 
 module Taxi
+  DEFAULT_LANGUAGE = 'en_US'
   module Package
     def self.make(bucket)
       Dir.mktmpdir do |dir|
@@ -17,6 +18,7 @@ module Taxi
           "#{package_name}.tar.gz"
         )
 
+        puts "> Creating package #{package_name.blue}".green
         Dir.chdir(dir) do
           Compression.targz('.', file_path)
         end
@@ -24,21 +26,25 @@ module Taxi
       end
     end
 
-    def self.translate(name, language_code)
+    def self.translate(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
       puts '> SFTP translate'.blue
 
-      name, lang, date = Utils.folder_structure(name, to: language_code)
-      folders = File.join(name, lang, date)
-      package = Utils.get_latest_package(name)
-      package_path = Config.cache_dir(package)
+      remote_package = Utils.get_package_name(name, to: to)
+      local_package = Utils.get_latest_package(name)
+      package_path = Config.cache_dir(local_package)
 
-      puts "> Package: #{folders.blue}".green
+      puts "> Package: #{local_package.blue} -> #{remote_package.blue}".green
       Dir.mktmpdir do |dir|
-        Log.info("targz unpack: #{package} -> #{dir}")
+        Log.info("targz unpack: #{local_package} -> #{dir}")
         Compression.untargz(package_path, dir)
 
-        ::Taxi::SFTP.upload(dir, folders)
+        ::Taxi::SFTP.remove(remote_package)
+        ::Taxi::SFTP.upload(dir, remote_package)
       end
+    end
+
+    def self.review_inspect(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
+      ::Taxi::SFTP.download(name, from: from, to: to)
     end
   end
 end

@@ -14,13 +14,18 @@ require 'taxi/utils/log'
 module Taxi
   module SubCLI
     class ReviewCommand < Thor
-      desc 'open <name> <language>', 'Download translated package (<name> translated to <language>) to cache'
-      def open(name, language)
-        ::Taxi::SFTP.download(name, to: language)
+      desc 'inspect <name> <to>',
+        'Download translated package (<name> translated to <to>) to review cache in order to inspect it'
+      def inspect(name, to)
+        Log.info("review inspect name=#{name} language=#{to}")
+        ::Taxi::Package.review_inspect(name, to: to)
       end
 
-      desc 'pass <name> <language>', 'Mark this package <name> to <language> as review passed'
+      desc 'pass <name> <language>',
+        'Mark this package <name> to <language> as "review passed" and move it to the deploy stage'
       def pass(name, language)
+        Log.info("review pass name=#{name} language=#{language}")
+        ::Taxi::Package.review_pass(name, to: language)
       end
     end
 
@@ -31,10 +36,11 @@ module Taxi
         ::Taxi::Package.make(name)
       end
 
-      desc 'translate <name> <from> <to>', 'Upload the translation package <name> to SFTP to be translated to from language <from> to <to>'
+      desc 'translate <name> <from> <to>',
+        'Upload the translation package <name> to SFTP to be translated to from language <from> to <to>'
       def translate(name, from, to)
         Log.info("package translate name=#{name} from=#{from} to=#{to}")
-        ::Taxi::Package.translate(name, to)
+        ::Taxi::Package.translate(name, from: from, to: to)
       end
 
       desc 'deploy <id> <language>', 'Deploy translation package named ID to S3'
