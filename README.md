@@ -34,14 +34,22 @@ SFTP/
 - 4_done/
 ```
 
-For each category, the following file structure must be present:
+<!-- For each category, the following file structure must be present: -->
+<!-- ``` -->
+<!-- - 1_open/ -->
+<!--   - <project>/ -->
+<!--     - 2020-04-22/ -->
+<!--       - ru_RU/ -->
+<!--       - de_DE/ -->
+<!-- ``` -->
+
+For each category, a folder in the format `<name>-<from>-<to>` has to be present:
 ```
 - 1_open/
-  - <project>/
-    - 2020-04-22/
-      - ru_RU/
-      - de_DE/
+  - <name>-<from>-<to>/
+  - wirecard-en_US-ru_RU/
 ```
+
 
 So the complete identifier for a *package* is `<project>/2020-04-22/ru_RU`, where the root folder `open` is the status.
 **TBD**: The package `<project>/2020-04-22/ru_RU` will be duplicated or moved to other stages.

@@ -5,5 +5,4 @@ require 'taxi/config'
 # commands
 require 'taxi/commands/package'
 require 'taxi/commands/status'
-require 'taxi/commands/translate'
 
