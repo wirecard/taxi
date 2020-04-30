@@ -47,8 +47,8 @@ module Taxi
 
     class SFTPCommand < Thor
       desc 'ls', 'List files on the SFTP server'
-      def ls
-        ::Taxi::SFTP.instance.ls
+      def ls(path = '/')
+        ::Taxi::SFTP.instance.ls(path)
       end
     end
   end
