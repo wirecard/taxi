@@ -23,6 +23,7 @@ module Taxi
     end
 
     def move(from, to)
+      puts "> SFTP rename: #{from} -> #{to}".blue
       @sftp.rename!(from, to)
     end
 
@@ -54,31 +55,6 @@ module Taxi
       puts '> SFTP Remove finished'.purple
     end
 
-    # DEPRECATED
-    # def rmdir(dir, category: DirConfig::OPEN, path: File.join('/share', category))
-    #   cpath = File.join(path, dir)
-    #   puts "* #{cpath}"
-
-    #   if exists?(cpath)
-    #     @sftp.dir.foreach(cpath) do |entry|
-    #       name = entry.name
-    #       unless %w[. ..].include?(name)
-    #         puts ". #{name}"
-    #         entry_path = File.join(cpath, name)
-
-    #         if entry.directory?
-    #           rmdir(name, path: cpath)
-    #           Log.debug("rmdir remote://#{entry_path}")
-    #           @sftp.rmdir!(entry_path)
-    #         else
-    #           Log.debug("rm remote://#{entry_path}")
-    #           @sftp.remove(entry_path)
-    #         end
-    #       end
-    #     end
-    #   end
-    # end
-
     def download(package, category: DirConfig::REVIEW)
       Log.info("SFTP Download [REVIEW OPEN] #{package}")
 
@@ -102,8 +78,8 @@ module Taxi
         # unlike the glob operation
         progress = Utils::ProgressBarHandler
           .new('  SFTP:download'.green, files.size + 1)
-        @sftp.download!(remote_path, local_path, recursive: true, progress: progress)
-
+        options = { recursive: true, progress: progress }
+        @sftp.download!(remote_path, local_path, options)
       rescue Net::SFTP::StatusException => e
         if status_ex.code == 2
           puts '! ERROR'.red

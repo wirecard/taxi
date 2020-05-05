@@ -44,6 +44,7 @@ module Taxi
     end
 
     def self.review_inspect(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
+      puts '[SFTP] Review Inspect'.green
       package_name = Utils.get_package_name(name, from: from, to: to)
       ::Taxi::SFTP.download(package_name)
     end
@@ -52,6 +53,7 @@ module Taxi
       package_name = Utils.get_package_name(name, from: from, to: to)
       from_dir = File.join('/share', DirConfig::REVIEW, package_name)
       to_dir = File.join('/share', DirConfig::DEPLOY, package_name)
+      puts '[SFTP] Review: Pass'.green
       ::Taxi::SFTP.move(from_dir, to_dir)
     end
   end
