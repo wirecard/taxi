@@ -66,9 +66,38 @@ module Taxi
     end
 
     class SFTPCommand < Thor
-      desc 'ls', 'List files on the SFTP server'
+      desc 'ls [path]', 'List files on the SFTP server'
       def ls(path = '/')
-        ::Taxi::SFTP.instance.ls(path)
+        ::Taxi::SFTP.instance.print_ls(path)
+      end
+    end
+
+    class StatusCommand < Thor
+      class_option :format, default: 'text'
+
+      desc 'all', 'List packages by status'
+      def all
+        ::Taxi::Status.list_all(format: options[:format])
+      end
+
+      desc 'open', 'List all untranslated packages'
+      def open
+        ::Taxi::Status.list_by_status(status: 'open', format: options[:format])
+      end
+
+      desc 'review', 'List packaes in review'
+      def review
+        ::Taxi::Status.list_by_status(status: 'review', format: options[:format])
+      end
+
+      desc 'deploy', 'List packages ready to deploy'
+      def deploy
+        ::Taxi::Status.list_by_status(status: 'deploy', format: options[:format])
+      end
+
+      desc 'done', 'List translated packages'
+      def done
+        ::Taxi::Status.list_by_status(status: 'done', format: options[:format])
       end
     end
   end
@@ -92,10 +121,7 @@ module Taxi
     subcommand 'review', SubCLI::ReviewCommand
 
     desc 'status', 'Checks translation packages for reviews and outstanding deployments'
-    option :package, type: :string
-    def status
-      puts 'status'
-    end
+    subcommand 'status', SubCLI::StatusCommand
 
     desc 'config', 'Output the currently loaded config'
     def config

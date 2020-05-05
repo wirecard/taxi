@@ -16,9 +16,18 @@ module Taxi
       instance.send(method_name, *arguments)
     end
 
-    def ls(path = '/')
+    def ls(path = '/share')
+      dirlist = []
       @sftp.dir.foreach(path) do |element|
-        puts element.longname
+        dirlist << element
+      end
+      return dirlist
+    end
+
+    def print_ls(path)
+      elements = ls(path)
+      elements.each do |e|
+        puts e.longname
       end
     end
 
