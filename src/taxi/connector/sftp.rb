@@ -70,7 +70,7 @@ module Taxi
       remote_dir = File.join('/share', category)
       local_dir = Config.cache_dir('deploy')
 
-      puts '> SFTP Download'.green
+      puts '> SFTP Download'.blue
       puts "                DOWNLOAD FOLDER = #{local_dir}".blue
       puts "                PACKAGE = #{package}".blue
 
@@ -90,7 +90,7 @@ module Taxi
         options = { recursive: true, progress: progress }
         @sftp.download!(remote_path, local_path, options)
       rescue Net::SFTP::StatusException => e
-        if status_ex.code == 2
+        if e.code == 2
           puts '! ERROR'.red
           puts e.message.red
           abort "Error: #{e.message}"

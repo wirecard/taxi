@@ -42,7 +42,7 @@ module Taxi
     end
 
     def download(bucket, dir)
-      puts "> AWS Bucket: get #{bucket}".yellow
+      puts "> AWS Download: #{bucket}".yellow
       s3 = s3_client
 
       # get list of objects
@@ -65,6 +65,56 @@ module Taxi
         end
       end
       progress.finish unless progress.finished?
+    end
+
+    def upload(bucket, local_dir, remote_subdir=nil)
+      puts "> AWS Upload: #{bucket}".yellow
+      puts "              SUBDIR: #{remote_subdir}".yellow unless remote_subdir.nil?
+      puts "              SOURCE: #{local_dir}".yellow
+      raise FileNotFound.new(local_dir) unless File.exists?(local_dir)
+
+      s3 = Aws::S3::Resource.new(client: s3_client)
+      bucket = s3.bucket(bucket)
+
+      files = Dir.glob(File.join(local_dir, '**/*')).reject { |f| File.directory?(f) }
+      puts "> Uploading #{files.size} files".yellow
+      progressbar = ProgressBar.create(title: '  AWS::Put'.yellow, total: files.size)
+      files.each do |file|
+        basename = File.basename(file)
+        file_path = (remote_subdir.nil?) ? basename : File.join(remote_subdir, basename)
+        bucket.object(file_path).upload_file(file) do |response|
+          progressbar.increment
+        end
+        # s3.put_object(
+        #   body: file,
+        #   bucket: bucket,
+        #   key: File.join(remote_subdir, File.basename(file))
+        # )
+      end
+      progressbar.finish unless progressbar.finished?
+    end
+
+    def delete(bucket, dir)
+      puts "> AWS Delete: #{bucket}".yellow
+      puts "              DIR: #{dir}".yellow
+
+      s3 = Aws::S3::Resource.new(client: s3_client)
+      bucket = s3.bucket(bucket)
+      bucket.object(dir).delete
+    end
+
+    def file_exists?(bucket, file)
+      s3 = Aws::S3::Resource.new(client: s3_client)
+      bucket = s3.bucket(bucket)
+      puts "> AWS Check: '#{file}' exists?".yellow
+      bucket.object(file).exists?
+    end
+
+    def dir_exists?(bucket, dir)
+      s3 = Aws::S3::Resource.new(client: s3_client)
+      bucket = s3.bucket(bucket)
+      puts "> AWS Check: '#{dir}' exists?".yellow
+      bucket.objects({ prefix: dir }).limit(1).any?
     end
 
     private

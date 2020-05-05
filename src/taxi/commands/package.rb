@@ -33,7 +33,7 @@ module Taxi
       local_package = Utils.get_latest_package(name)
       package_path = Config.cache_dir(local_package)
 
-      puts "> Package: #{local_package.blue} -> #{remote_package.blue}".green
+      puts "> Package: #{local_package.white} -> #{remote_package.white}".blue
       Dir.mktmpdir do |dir|
         Log.info("targz unpack: #{local_package} -> #{dir}")
         Compression.untargz(package_path, dir)
@@ -41,6 +41,25 @@ module Taxi
         ::Taxi::SFTP.remove(remote_package)
         ::Taxi::SFTP.upload(dir, remote_package)
       end
+    end
+
+    def self.deploy(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
+      puts '! Deploy'.green
+      package_name = Utils.get_package_name(name, from: from, to: to)
+      ::Taxi::SFTP.download(package_name)
+
+      subdir = Config.cache_dir(DirConfig::DEPLOY.split('_').last)
+      local_dir = File.join(subdir, package_name)
+      lang_code = to.split('_').first
+
+      # delete the subfolder if it exists
+      if ::Taxi::S3.dir_exists?(name, lang_code)
+        puts '> AWS Cleanup'.yellow
+        ::Taxi::S3.delete(name, lang_code)
+      end
+
+      puts '> AWS Deploy'.yellow
+      ::Taxi::S3.upload(name, local_dir, lang_code)
     end
   end
 end

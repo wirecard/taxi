@@ -28,10 +28,12 @@ module Taxi
         ::Taxi::Package.translate(name, from: from, to: to)
       end
 
-      desc 'deploy <id> <language>', 'Deploy translation package named ID to S3'
+      desc 'deploy <name> <from> <to>', 'Deploy translation package <name> (translated <from> to <to>) to S3
+      Will be uploaded under /ru for ru_RU, /es for es_ES, etc.
+      <from> defaults to "en_US"'
       option :remove, type: :boolean
-      def deploy(id, language)
-        puts "deploy #{id} #{language}"
+      def deploy(name, from="en_US", to)
+        ::Taxi::Package.deploy(name, from: from, to: to)
       end
     end
 
