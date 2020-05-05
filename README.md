@@ -20,18 +20,16 @@ To run `taxi` in development mode, set the environment variable `DEV_ENV` which 
 ### Stages and Structure
 There are 4 stages in the translation workflow:
 1. **open**: ready to be translated by the translation agency
-2. **review**: ready to be reviewed, adapted and then approved for deployment
-3. **deploy**: ready to be deployed
-4. **done**: deployed in production
+2. **deploy**: translated and ready to be deployed
+3. **done**: deployed in production
 
 
 Overall file structure:
 ```
 SFTP/
 - 1_open/
-- 2_review/
-- 3_deploy/
-- 4_done/
+- 2_deploy/
+- 3_done/
 ```
 
 <!-- For each category, the following file structure must be present: -->
@@ -57,7 +55,7 @@ So the complete identifier for a *package* is `<project>/2020-04-22/ru_RU`, wher
 Using `taxi`, an example workflow would be:
 1. `taxi package make`
 2. `taxi package translate`
-3. `taxi package review pass`
+3. Translation
 4. `taxi package deploy`
 
 You can use `taxi package status` or `taxi package status <id>` to check the status of all/one package(s**.

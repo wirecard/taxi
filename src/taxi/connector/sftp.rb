@@ -64,18 +64,18 @@ module Taxi
       puts '> SFTP Remove finished'.purple
     end
 
-    def download(package, category: DirConfig::REVIEW)
-      Log.info("SFTP Download [REVIEW OPEN] #{package}")
+    def download(package, category: DirConfig::DEPLOY)
+      Log.info("SFTP Download #{package}")
 
-      remote_review_dir = File.join('/share', category)
-      local_review_dir = Config.cache_dir('review')
+      remote_dir = File.join('/share', category)
+      local_dir = Config.cache_dir('deploy')
 
       puts '> SFTP Download'.green
-      puts "                DOWNLOAD FOLDER = #{local_review_dir}".blue
+      puts "                DOWNLOAD FOLDER = #{local_dir}".blue
       puts "                PACKAGE = #{package}".blue
 
-      remote_path = File.join(remote_review_dir, package)
-      local_path = File.join(local_review_dir, package)
+      remote_path = File.join(remote_dir, package)
+      local_path = File.join(local_dir, package)
       FileUtils.rm_r(local_path) if Dir.exists?(local_path)
       FileUtils.mkdir_p(local_path)
 
@@ -158,7 +158,7 @@ module Taxi
       create_dir('/share') unless exists?('/share')
 
       subdirs = [
-        DirConfig::OPEN, DirConfig::REVIEW, DirConfig::DEPLOY, DirConfig::DONE
+        DirConfig::OPEN, DirConfig::DEPLOY, DirConfig::DONE
       ].map { |dir| File.join('/share', dir) }
 
       subdirs.each do |subdir|

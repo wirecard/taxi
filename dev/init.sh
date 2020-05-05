@@ -17,6 +17,7 @@ mkdir -p "${KEYS_DIR}"
 ssh-keygen -N '' -t rsa -b 4096 -f "${KEYS_DIR}/agency_rsa_key" <<< y > /dev/null
 print_ok_failed $?
 
+
 echo -n "Generate Folder Structure....   "
-mkdir -p "${DATA_DIR}"/{1_open,2_review,3_deploy,4_done}
+mkdir -p "${DATA_DIR}"/{1_open,2_deploy,3_done}
 print_ok_failed $?

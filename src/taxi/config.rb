@@ -9,9 +9,8 @@ require 'fileutils'
 module Taxi
   module DirConfig
     OPEN = '1_open'
-    REVIEW = '2_review'
-    DEPLOY = '3_deploy'
-    DONE = '4_done'
+    DEPLOY = '2_deploy'
+    DONE = '3_done'
   end
 
   class Config
