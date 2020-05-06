@@ -44,13 +44,12 @@ SFTP/
 For each category, a folder in the format `<name>-<from>-<to>` has to be present:
 ```
 - 1_open/
-  - <name>-<from>-<to>/
-  - wirecard-en_US-ru_RU/
+  - <name>-<from>-<to>-<date>/
+  - wirecard-en_US-ru_RU-20200506/
 ```
 
 
-So the complete identifier for a *package* is `<project>/2020-04-22/ru_RU`, where the root folder `open` is the status.
-**TBD**: The package `<project>/2020-04-22/ru_RU` will be duplicated or moved to other stages.
+So the complete identifier for a *package* is `<name>-<from>-<to>-<date>`, where the root folder `open` is the status.
 
 Using `taxi`, an example workflow would be:
 1. `taxi package make`

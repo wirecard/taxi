@@ -6,7 +6,11 @@ require 'amazing_print'
 require 'aws-sdk-s3'
 require 'fileutils'
 
+require 'taxi/errors'
+
 module Taxi
+  DEFAULT_LANGUAGE = 'en_US'
+
   module DirConfig
     OPEN = '1_open'
     DEPLOY = '2_deploy'

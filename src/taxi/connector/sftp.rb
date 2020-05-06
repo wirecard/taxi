@@ -31,8 +31,16 @@ module Taxi
       end
     end
 
+    def glob(path, pattern)
+      dirlist = []
+      @sftp.dir.glob(path, pattern) do |match| 
+        dirlist << match
+      end
+      return dirlist
+    end
+
     def move(from, to)
-      puts "> SFTP rename: #{from} -> #{to}".blue
+      puts "> SFTP rename: #{from.whiteish} -> #{to.whiteish}".blue
       @sftp.rename!(from, to)
     end
 
@@ -81,12 +89,12 @@ module Taxi
 
       begin
         files = []
-        puts '> SFTP Query: getting file index...'.green
+        puts '> SFTP Query: getting file index...'.blue
         @sftp.dir.glob(remote_path, '**/*') { |file| files << file }
         # add 1 to size because the download counts the current directory,
         # unlike the glob operation
         progress = Utils::ProgressBarHandler
-          .new('  SFTP:download'.green, files.size + 1)
+          .new('  SFTP:download'.blue, files.size + 1)
         options = { recursive: true, progress: progress }
         @sftp.download!(remote_path, local_path, options)
       rescue Net::SFTP::StatusException => e
@@ -103,7 +111,7 @@ module Taxi
 
     def upload(src, dst, base = File.join('/share', DirConfig::OPEN))
       Log.info("SFTP Upload src=#{src} base=#{base} dst=#{dst}")
-      puts '> SFTP Upload'.green
+      puts '> SFTP Upload'.blue
       puts "              BASE = #{base.blueish}".blue
       puts "              DST  = #{dst.blueish}".blue
       # package folder setup on remote
@@ -115,7 +123,7 @@ module Taxi
 
       files = Dir.glob('**/*', base: src)
       progressbar = ProgressBar.create(
-        title: '  SFTP:upload'.green,
+        title: '  SFTP:upload'.blue,
         total: files.size
       )
       # copy package

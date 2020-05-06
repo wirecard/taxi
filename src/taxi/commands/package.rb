@@ -6,7 +6,6 @@ require 'taxi/utils/compression'
 require 'taxi/utils/package'
 
 module Taxi
-  DEFAULT_LANGUAGE = 'en_US'
   module Package
     def self.make(bucket)
       Dir.mktmpdir do |dir|
@@ -29,8 +28,9 @@ module Taxi
     def self.translate(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
       puts '> SFTP translate'.blue
 
-      remote_package = Utils.get_package_name(name, from: from, to: to)
       local_package = Utils.get_latest_package(name)
+      date = File.basename(local_package, '.tar.gz').split('-').last
+      remote_package = Utils.get_package_name(name, from: from, to: to, timestamp: date)
       package_path = Config.cache_dir(local_package)
 
       puts "> Package: #{local_package.white} -> #{remote_package.white}".blue
@@ -45,7 +45,17 @@ module Taxi
 
     def self.deploy(name, from: DEFAULT_LANGUAGE, to: DEFAULT_LANGUAGE)
       puts '! Deploy'.green
-      package_name = Utils.get_package_name(name, from: from, to: to)
+      # package_name = Utils.get_package_name(name, from: from, to: to)
+      package_name = ::Taxi::SFTP.glob(
+        File.join('/share', DirConfig::DEPLOY),
+        "#{name}-*"
+      ).map(&:name).max
+
+      if package_name.nil?
+        raise FileNotFound.new(
+          "No folder like '#{name}-*' in #{DirConfig::DEPLOY}")
+      end
+
       ::Taxi::SFTP.download(package_name)
 
       subdir = Config.cache_dir(DirConfig::DEPLOY.split('_').last)
@@ -60,6 +70,13 @@ module Taxi
 
       puts '> AWS Deploy'.yellow
       ::Taxi::S3.upload(name, local_dir, lang_code)
+      puts '> AWS Deploy Done'.green
+
+      puts "> SFTP Archive Package #{package_name.white}".blue
+      ::Taxi::SFTP.move(
+        File.join('/share', DirConfig::DEPLOY, package_name),
+        File.join('/share', DirConfig::DONE, package_name)
+      )
     end
   end
 end
