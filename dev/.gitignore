@@ -1,3 +1,5 @@
 s3-data/
 sftp-data/
 sftp-keys/
+sftp-config/
+example-data-sftp/

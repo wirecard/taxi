@@ -5,15 +5,20 @@ services:
     image: atmoz/sftp:alpine
     container_name: sftp
     volumes:
+      # user config
+      - ./sftp-config/users.conf:/etc/sftp/users.conf:ro
       # mount agency translation data to ./sftp-data
-      - ./sftp-data:/home/agency/share
+      - ./sftp-data:/home
+      # mount host keys
+      - ./sftp-keys/host/ed25519_key:/etc/ssh/ssh_host_ed25519_key
+      - ./sftp-keys/host/rsa_key:/etc/ssh/ssh_host_rsa_key
       # mount public keys used by agency
-      - ./sftp-keys:/home/agency/.ssh/keys:ro
+      - ./sftp-keys/agency1/rsa_key.pub:/home/agency1/.ssh/keys/rsa_key.pub
+      - ./sftp-keys/agency2/rsa_key.pub:/home/agency2/.ssh/keys/rsa_key.pub
+      - ./sftp-keys/agency3/rsa_key.pub:/home/agency3/.ssh/keys/rsa_key.pub
     # run on port 2222
     ports:
       - "2222:22"
-    # create user 'agency'
-    command: agency::1001
 
   s3:
     image: minio/minio:latest

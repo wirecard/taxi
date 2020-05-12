@@ -41,13 +41,18 @@ module Taxi
       end
     end
 
-    def download(bucket, dir)
-      puts "> AWS Download: #{bucket}".yellow
+    def download(bucket, site, dir)
+      puts "> AWS Download: #{site} @ #{bucket}".yellow
       s3 = s3_client
 
       # get list of objects
-      response = s3.list_objects_v2(bucket: bucket)
+      response = s3.list_objects_v2(bucket: bucket, prefix: site)
       files = response.contents.map(&:key)
+
+      if files.size.zero?
+        raise AWSError.new("No files downloaded: #{bucket} @ #{site}")
+      end
+
       # get tmp dir to save data to
       Log.debug("S3 download to  #{dir}")
       puts '> S3 Download'.green

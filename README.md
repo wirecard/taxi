@@ -27,19 +27,15 @@ There are 4 stages in the translation workflow:
 Overall file structure:
 ```
 SFTP/
-- 1_open/
-- 2_deploy/
-- 3_done/
+- user1/
+  - 1_open/
+  - 2_deploy/
+  - 3_done/
+- user2/
+  - 1_open/
+  - 2_deploy/
+  - 3_done/
 ```
-
-<!-- For each category, the following file structure must be present: -->
-<!-- ``` -->
-<!-- - 1_open/ -->
-<!--   - <project>/ -->
-<!--     - 2020-04-22/ -->
-<!--       - ru_RU/ -->
-<!--       - de_DE/ -->
-<!-- ``` -->
 
 For each category, a folder in the format `<name>-<from>-<to>` has to be present:
 ```
@@ -51,13 +47,58 @@ For each category, a folder in the format `<name>-<from>-<to>` has to be present
 
 So the complete identifier for a *package* is `<name>-<from>-<to>-<date>`, where the root folder `open` is the status.
 
+### Example Workflow
+
 Using `taxi`, an example workflow would be:
 1. `taxi package make`
 2. `taxi package translate`
 3. Translation
 4. `taxi package deploy`
 
-You can use `taxi package status` or `taxi package status <id>` to check the status of all/one package(s**.
+You can use `taxi package status all|open|deploy|done` to check the status of packages.
+
+### Commands
+#### package make
+```sh
+taxi package make <name> <path> [--bucket=<bucket>]
+```
+
+Arguments:
+* `name`: name of the package (free to choose any name)
+* `path`: path to the resources on S3 (results in `s3://<bucket>/<path>`)
+* **OPTIONAL** `bucket`: name of the bucket (*Default:*  `$AWS_DEFAULT_BUCKET`)
+
+#### package translate
+```sh
+taxi package translate <name> [<from>] <to> --agency=<agency>
+```
+
+Arguments:
+* `name`: name of the package (must match the `name` specified in `package make`)
+* **OPTIONAL** `from`: original language (*Default: en_US*)
+* `to`: target language (*e.g. ru_RU*)
+* `agency`: name of the agency which will get the translation package (AKA user name for SFTP)
+
+#### package deploy
+```sh
+taxi package deploy <name> <path> [<from>] <to> [--bucket=<bucket>] --agency=<agency>
+```
+
+Arguments:
+* `name`: name of the package (must match the `name` specified in `package make`)
+* `path`: path to the resources on S3 (results in `s3://<bucket>/<path>`)
+* **OPTIONAL** `from`: original language (*Default: en_US*)
+* `to`: target language (*e.g. ru_RU*)
+* **OPTIONAL** `bucket`: name of the bucket (*Default:* `$AWS_DEFAULT_BUCKET`)
+* `agency`: name of the agency which translated the package (AKA user name for SFTP)
+
+#### status
+```sh
+taxi package status <phase>
+```
+
+Arguments:
+* `phase`: one of `open`, `deploy`, `done` or `all`
 
 ## Dev Environment
 This section describes the setup of a development environment.
@@ -166,5 +207,5 @@ You may create more buckets and add more content at this point.
 These variables will set up `taxi` to use the local infrastructure from `dev/docker-compose.yml`.
 
 ### TODO
-* [ ] Add multiple users to SFTP
+* [x] SFTP: Add multiple users (via `users.conf`)
 * [ ] SFTP: Mount user config file for users, and generate the keys according to the user names in that config

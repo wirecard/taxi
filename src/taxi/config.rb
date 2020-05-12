@@ -67,7 +67,7 @@ module Taxi
         user: ENV['SFTP_USER'],
         host: ENV['SFTP_HOST'],
         port: ENV['SFTP_PORT'],
-        keys: Dir.glob(File.join(ENV['SFTP_KEYS'], '*?[^(\.pub)]'))
+        keys: ENV['SFTP_KEYS']
       }
       @sftp_config = OpenStruct.new(sftp_config)
 

@@ -14,26 +14,44 @@ require 'taxi/utils/log'
 module Taxi
   module SubCLI
     class PackageCommand < Thor
-      desc 'make <name>', 'Create a translation package for <name>'
-      def make(name)
-        Log.info("package make name=#{name}")
-        ::Taxi::Package.make(name)
+      desc 'make <name> <path>', 'Create a translation package for <name> at <path> on S3'
+      option :bucket, default: ENV['AWS_DEFAULT_BUCKET']
+      def make(name, path)
+        Log.info("package make name=#{name} path=#{path} bucket=#{options[:bucket]}")
+
+        unless options[:bucket]
+          raise EngineFailure, '--bucket was not specified and $AWS_DEFAULT_BUCKET is not set'
+        end
+        ::Taxi::Package.make(name, path, bucket: options[:bucket])
       end
 
       desc 'translate <name> <from> <to>',
         'Upload the translation package <name> to SFTP to be translated to from language <from> to <to>
-        <from> defaults to "en_US"'
+        ! <from> defaults to "en_US"'
+      option :agency, required: true
       def translate(name, from='en_US', to)
-        Log.info("package translate name=#{name} from=#{from} to=#{to}")
-        ::Taxi::Package.translate(name, from: from, to: to)
+        agency = options[:agency]
+        Log.info("package translate name=#{name} from=#{from} to=#{to} agency=#{agency}")
+        ::Taxi::Package.translate(name, from: from, to: to, agency: agency)
       end
 
-      desc 'deploy <name> <from> <to>', 'Deploy translation package <name> (translated <from> to <to>) to S3
-      Will be uploaded under /ru for ru_RU, /es for es_ES, etc.
-      <from> defaults to "en_US"'
-      option :remove, type: :boolean
-      def deploy(name, from="en_US", to)
-        ::Taxi::Package.deploy(name, from: from, to: to)
+      desc 'deploy <name> <path> [<from>] <to>', 'Deploy translation package <name> (translated <from> to <to>) to S3.
+      Will be uploaded under <path>/ru for ru_RU, <path>/it for it_IT, etc.
+      ! <from> defaults to "en_US"'
+      option :bucket, default: ENV['AWS_DEFAULT_BUCKET']
+      option :agency, required: true
+      def deploy(name, path, from="en_US", to)
+        agency = options[:agency]
+        bucket = options[:bucket]
+        Log.info("package deploy name=#{name} path=#{path} from=#{from} " \
+          "to=#{to} agency=#{agency} bucket=#{bucket}")
+        unless options[:bucket]
+          raise EngineFailure, '--bucket was not specified and $AWS_DEFAULT_BUCKET is not set'
+        end
+
+        ::Taxi::Package.deploy(
+          name, path, from: from, to: to, bucket: bucket, agency: agency
+        )
       end
     end
 
@@ -58,30 +76,26 @@ module Taxi
 
     class StatusCommand < Thor
       class_option :format, default: 'text'
+      class_option :agency, required: true
 
       desc 'all', 'List packages by status'
       def all
-        ::Taxi::Status.list_all(format: options[:format])
+        ::Taxi::Status.list_all(format: options[:format], agency: options[:agency])
       end
 
       desc 'open', 'List all untranslated packages'
       def open
-        ::Taxi::Status.list_by_status(status: 'open', format: options[:format])
-      end
-
-      desc 'review', 'List packaes in review'
-      def review
-        ::Taxi::Status.list_by_status(status: 'review', format: options[:format])
+        ::Taxi::Status.list_by_status(status: 'open', format: options[:format], agency: options[:agency])
       end
 
       desc 'deploy', 'List packages ready to deploy'
       def deploy
-        ::Taxi::Status.list_by_status(status: 'deploy', format: options[:format])
+        ::Taxi::Status.list_by_status(status: 'deploy', format: options[:format], agency: options[:agency])
       end
 
       desc 'done', 'List translated packages'
       def done
-        ::Taxi::Status.list_by_status(status: 'done', format: options[:format])
+        ::Taxi::Status.list_by_status(status: 'done', format: options[:format], agency: options[:agency])
       end
     end
   end

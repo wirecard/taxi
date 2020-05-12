@@ -1,26 +1,26 @@
 # frozen_string_literal: true
 
+require 'taxi/config'
 require 'date'
 
 module Taxi
   module Status
     STATUS_FOLDERS = {
-      'open' => '1_open',
-      'review' => '2_review',
-      'deploy' => '3_deploy',
-      'done' => '4_done'
+      'open' => DirConfig::OPEN,
+      'deploy' => DirConfig::DEPLOY,
+      'done' => DirConfig::DONE
     }.freeze
     LS_REGEX = /^(?<type>[d|-])r[rwx-]{8} .+ (?<mod_month>\w+) (?<mod_day>[0-9]{2}) ((?<mod_hour>[0-9]{2}):(?<mod_minute>[0-9]{2})|(?<mod_year>[0-9]{4})) (?<name>[\w]+)$/.freeze
 
-    def self.list_all(format:)
-      folders = ls_to_h.select do |entry|
+    def self.list_all(format:, agency:)
+      folders = ls_to_h(agency: agency).select do |entry|
         (entry['type'] == 'd') && (STATUS_FOLDERS.include? entry['name'][2..-1])
       end
       folder_hash = {}
       folders.each do |folder|
         title = folder['name'][2..-1].upcase
-        path = '/share/' + folder['name']
-        folder_hash[title] = ls_to_h(path)
+        path = File.join('/', folder['name'])
+        folder_hash[title] = ls_to_h(path, agency: agency)
       end
       print_folders(folder_hash: folder_hash, format: format)
     end
@@ -48,8 +48,9 @@ module Taxi
       puts JSON.pretty_unparse(output_hash) if format == 'json'
     end
 
-    def self.ls_to_h(path = '/share')
-      entries = ::Taxi::SFTP.instance.ls(path)
+    def self.ls_to_h(path = '/', agency:)
+      sftp = ::Taxi::SFTP.new(agency)
+      entries = sftp.ls(path)
       entries = entries.select do |e|
         true unless e.name =~ /^\.+/
       end
@@ -74,12 +75,13 @@ module Taxi
     def self.list_by_status(**kwargs)
       status = kwargs[:status]
       format = kwargs[:format]
+      agency = kwargs[:agency]
       return unless STATUS_FOLDERS[status]
 
       title = status.upcase
-      path = '/share/' + STATUS_FOLDERS[status]
+      path = File.join('/', STATUS_FOLDERS[status])
       folder_hash = {}
-      folder_hash[title] = ls_to_h(path)
+      folder_hash[title] = ls_to_h(path, agency: agency)
       print_folders(folder_hash: folder_hash, format: format)
     end
 

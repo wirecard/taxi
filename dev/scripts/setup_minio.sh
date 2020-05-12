@@ -2,7 +2,7 @@
 
 
 HOST=s3
-BUCKETS="wcd nov pdo cps mps"
+BUCKET="public"
 LOG=/dev/null
 
 sleep 3
@@ -53,7 +53,5 @@ mc admin user add ${HOST} myuser myuserletmein
 mc admin group add ${HOST} mygroup myuser
 mc admin policy set ${HOST} allowall group=mygroup
 
-for bucket in ${BUCKETS}; do
-  mc mb ${HOST}/${bucket}
-  mc policy set download ${HOST}/${bucket}
-done
+mc mb ${HOST}/${BUCKET}
+mc policy set download ${HOST}/${BUCKET}

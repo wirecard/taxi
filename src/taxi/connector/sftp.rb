@@ -9,14 +9,12 @@ require 'taxi/utils/progressbar'
 
 module Taxi
   class SFTP
-    include Singleton
-
     # forward missing static method to instance
     def self.method_missing(method_name, *arguments)
       instance.send(method_name, *arguments)
     end
 
-    def ls(path = '/share')
+    def ls(path = '/')
       dirlist = []
       @sftp.dir.foreach(path) do |element|
         dirlist << element
@@ -33,7 +31,7 @@ module Taxi
 
     def glob(path, pattern)
       dirlist = []
-      @sftp.dir.glob(path, pattern) do |match| 
+      @sftp.dir.glob(path, pattern) do |match|
         dirlist << match
       end
       return dirlist
@@ -44,7 +42,7 @@ module Taxi
       @sftp.rename!(from, to)
     end
 
-    def remove(dir, category: DirConfig::OPEN, path: File.join('/share', category))
+    def remove(dir, category: DirConfig::OPEN, path: File.join('/', category))
       cpath = File.join(path, dir)
 
       begin
@@ -75,7 +73,7 @@ module Taxi
     def download(package, category: DirConfig::DEPLOY)
       Log.info("SFTP Download #{package}")
 
-      remote_dir = File.join('/share', category)
+      remote_dir = File.join('/', category)
       local_dir = Config.cache_dir('deploy')
 
       puts '> SFTP Download'.blue
@@ -109,7 +107,7 @@ module Taxi
       puts '> SFTP Download finished'.green
     end
 
-    def upload(src, dst, base = File.join('/share', DirConfig::OPEN))
+    def upload(src, dst, base = File.join('/', DirConfig::OPEN))
       Log.info("SFTP Upload src=#{src} base=#{base} dst=#{dst}")
       puts '> SFTP Upload'.blue
       puts "              BASE = #{base.blueish}".blue
@@ -163,30 +161,32 @@ module Taxi
     end
 
     def checks
-      create_dir('/share') unless exists?('/share')
-
       subdirs = [
         DirConfig::OPEN, DirConfig::DEPLOY, DirConfig::DONE
-      ].map { |dir| File.join('/share', dir) }
+      ].map { |dir| File.join('/', dir) }
 
       subdirs.each do |subdir|
         create_dir(subdir) unless exists?(subdir)
       end
     end
 
-    def initialize
+    def initialize(user)
       sftp_config = Config.sftp_config
+      user_keys_dir = File.join(sftp_config.keys, user)
+      unless File.exists?(user_keys_dir)
+        raise SFTPError, "No keys for user #{user} found @ #{user_keys_dir}"
+      end
+
       options = {
         port: sftp_config.port,
-        keys: sftp_config.keys,
+        keys: Dir.glob(File.join(user_keys_dir, '*?[^(\.pub)]')),
         keys_only: true,
         use_agent: false
       }
       options[:user_known_hosts_file] = '/dev/null' if ENV.key?('DEV_ENV')
       options[:verbose] = ENV['LOGLEVEL']&.to_sym || :error
-      @sftp = Net::SFTP.start(sftp_config.host, sftp_config.user, options)
-      # sanity checks
-      checks
+      @sftp = Net::SFTP.start(sftp_config.host, user, options)
     end
+
   end
 end
