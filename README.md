@@ -94,11 +94,12 @@ Arguments:
 
 #### status
 ```sh
-taxi package status <phase>
+taxi package status <phase> --agency=<agency>
 ```
 
 Arguments:
 * `phase`: one of `open`, `deploy`, `done` or `all`
+* `agency`: name of the agency (AKA user name for SFTP)
 
 ## Dev Environment
 This section describes the setup of a development environment.
