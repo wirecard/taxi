@@ -145,8 +145,6 @@ module Taxi
       puts '> SFTP Translate finished'.green
     end
 
-    private
-
     def exists?(path)
       dirname = File.dirname(path)
       basename = File.basename(path)
@@ -154,6 +152,8 @@ module Taxi
     rescue Net::SFTP::StatusException
       return false
     end
+
+    private
 
     def create_dir(path)
       Log.debug("Creating  #{path}")

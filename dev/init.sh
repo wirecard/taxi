@@ -17,6 +17,8 @@ function print_ok_failed() {
     fi
 }
 
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 echo -n "Cleanup folders...              "
 rm -rf ${KEYS_DIR}/* ${DATA_DIR}/* ${CONFIG_DIR}/*
 print_ok_failed $?

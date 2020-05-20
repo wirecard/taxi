@@ -4,7 +4,7 @@ require 'taxi/config'
 require 'date'
 
 module Taxi
-  module Status
+  class Status
     STATUS_FOLDERS = {
       'open' => DirConfig::OPEN,
       'deploy' => DirConfig::DEPLOY,
@@ -13,16 +13,35 @@ module Taxi
     LS_REGEX = /^(?<type>[d|-])r[rwx-]{8} .+ (?<mod_month>\w+) (?<mod_day>[0-9]{2}) ((?<mod_hour>[0-9]{2}):(?<mod_minute>[0-9]{2})|(?<mod_year>[0-9]{4})) (?<name>[\w]+)$/.freeze
 
     def self.list_all(format:, agency:)
-      folders = ls_to_h(agency: agency).select do |entry|
-        (entry['type'] == 'd') && (STATUS_FOLDERS.include? entry['name'][2..-1])
+      # TODO: this is so fugly, please rewrite
+      # check if specified agency is a valid agency
+      # yes? convert to array
+      agencies_array = Config.agencies.to_h.keys.map { |k| k.to_s }
+
+      if agency && !agencies_array.include?(agency)
+        puts 'Valid agencies: ' + agencies_array.join(', ')
+        return false
+      else
+        agencies = agency.split if agency
       end
-      folder_hash = {}
-      folders.each do |folder|
-        title = folder['name'][2..-1].upcase
-        path = File.join('/', folder['name'])
-        folder_hash[title] = ls_to_h(path, agency: agency)
+      # if no agency was specified, use all
+      agencies ||= agencies_array
+
+      # list all translation agencies folders unless one is specified
+      agencies.each do |a|
+        puts "\n"
+        puts Config.agencies[a][:name].green
+        folders = ls_to_h(agency: a).select do |entry|
+          (entry['type'] == 'd') && (STATUS_FOLDERS.include? entry['name'][2..-1])
+        end
+        folder_hash = {}
+        folders.each do |folder|
+          title = folder['name'][2..-1].upcase
+          path = File.join('/', folder['name'])
+          folder_hash[title] = ls_to_h(path, agency: a)
+        end
+        print_folders(folder_hash: folder_hash, format: format)
       end
-      print_folders(folder_hash: folder_hash, format: format)
     end
 
     def self.print_folders(folder_hash:, format:)
@@ -49,8 +68,13 @@ module Taxi
     end
 
     def self.ls_to_h(path = '/', agency:)
-      sftp = ::Taxi::SFTP.new(agency)
-      entries = sftp.ls(path)
+      if @agency != agency
+        @sftp = ::Taxi::SFTP.new(agency)
+        @agency = agency
+      else
+        @sftp ||= ::Taxi::SFTP.new(agency)
+      end
+      entries = @sftp.ls(path)
       entries = entries.select do |e|
         true unless e.name =~ /^\.+/
       end

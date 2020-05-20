@@ -28,3 +28,5 @@ gem "ed25519", "~> 1.2"
 gem "bcrypt_pbkdf", "~> 1.0"
 
 gem "minitar", "~> 0.9"
+
+gem 'fast_html_diff'

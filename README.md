@@ -6,19 +6,18 @@
 ```sh
 gem install bundler:2.1.4
 bundle install
-bundle exec bin/taxi --help
 ```
 
 ## Run
 ```sh
-bundle exec bin/taxi
+DEV_ENV=true bundle exec bin/taxi --help
 ```
-To run `taxi` in development mode, set the environment variable `DEV_ENV` which will load `.env` at startup.
+Setting the environment variable `DEV_ENV` will load `.env` at startup.
 
 ## Translations
 
 ### Stages and Structure
-There are 4 stages in the translation workflow:
+There are 3 stages in the translation workflow:
 1. **open**: ready to be translated by the translation agency
 2. **deploy**: translated and ready to be deployed
 3. **done**: deployed in production
@@ -125,9 +124,9 @@ docker-compose -f dev/docker-compose.yml down --remove-orphans
 ### Access
 
 #### SFTP server
-Login via Terminal
+Login via Terminal, e.g. as agency2
 ```sh
-sftp -P 2222 -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no -i sftp-keys/agency_rsa_key agency@localhost
+sftp -P 2222 -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no -i dev/sftp-keys/agency2/rsa_key agency2@localhost
 ```
 
 #### S3 Bucket Web Interface

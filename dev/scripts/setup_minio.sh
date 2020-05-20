@@ -5,8 +5,6 @@ HOST=s3
 BUCKET="public"
 LOG=/dev/null
 
-sleep 3
-
 mc config host add ${HOST} http://${HOST}:9000 "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}" --api S3v4
 
 cat > allowall.json << EOF
@@ -47,6 +45,14 @@ cat > allowall.json << EOF
     "Version": "2012-10-17"
 }
 EOF
+
+# wait for startup of minio
+echo -n "Waiting for Minio S3 startup"
+while ! mc admin info ${HOST} >/dev/null; do
+    echo -n '.'
+    sleep 1
+done
+echo " OK"
 
 mc admin policy add ${HOST} allowall allowall.json
 mc admin user add ${HOST} myuser myuserletmein

@@ -7,9 +7,9 @@ require 'taxi/connector/sftp'
 
 require 'taxi/commands/package'
 require 'taxi/commands/status'
+require 'taxi/commands/review'
 
 require 'taxi/utils/log'
-
 
 module Taxi
   module SubCLI
@@ -68,19 +68,23 @@ module Taxi
     end
 
     class SFTPCommand < Thor
+      option :agency, required: true
       desc 'ls [path]', 'List files on the SFTP server'
       def ls(path = '/')
-        ::Taxi::SFTP.instance.print_ls(path)
+        agency = options[:agency]
+        ::Taxi::SFTP.new(agency).print_ls(path)
       end
     end
 
     class StatusCommand < Thor
       class_option :format, default: 'text'
-      class_option :agency, required: true
+      class_option :agency, required: false
 
       desc 'all', 'List packages by status'
       def all
-        ::Taxi::Status.list_all(format: options[:format], agency: options[:agency])
+        f = options[:format]
+        a = options[:agency]
+        ::Taxi::Status.list_all(format: f, agency: a)
       end
 
       desc 'open', 'List all untranslated packages'
@@ -98,6 +102,16 @@ module Taxi
         ::Taxi::Status.list_by_status(status: 'done', format: options[:format], agency: options[:agency])
       end
     end
+
+    class ReviewCommand < Thor
+      class_option :format, default: 'html'
+      class_option :agency, required: true
+
+      desc 'create <name> <lang_code> <from> [to=latest] [format=html]', 'Create file that shows changes between translations since <from>.'
+      def create(name, lang, from, to = 'latest')
+        ::Taxi::Review.create(name, lang, from, to, format: options[:format], agency: options[:agency])
+      end
+    end
   end
 
   class CLI < Thor
@@ -112,6 +126,9 @@ module Taxi
     desc 'bucket SUBCOMMAND ...ARGS', 'Bucket operations'
     subcommand 'bucket', SubCLI::BucketCommand
 
+    desc 'review SUBCOMMAND ...ARGS', 'Review changes'
+    subcommand 'review', SubCLI::ReviewCommand
+
     desc 'sftp SUBCOMMAND ...ARGS', 'SFTP operations'
     subcommand 'sftp', SubCLI::SFTPCommand
 
@@ -120,10 +137,10 @@ module Taxi
 
     desc 'config', 'Output the currently loaded config'
     def config
-      raise StandardError.new(
-        'Tried to print environment without $DEV_ENV set. ' \
-          'Abort printing production credentials.'
-      ) if !ENV.key?('DEV_ENV')
+      unless ENV.key?('DEV_ENV')
+        raise StandardError, 'Tried to print environment without $DEV_ENV set. ' \
+            'Abort printing production credentials.'
+      end
 
       Config.instance.print
     end

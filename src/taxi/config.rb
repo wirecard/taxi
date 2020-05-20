@@ -20,7 +20,7 @@ module Taxi
   class Config
     include Singleton
 
-    attr_reader :aws_config, :sftp_config
+    attr_reader :aws_config, :sftp_config, :agencies
 
     # forward missing static method to instance
     def self.method_missing(method_name, *arguments)
@@ -80,6 +80,22 @@ module Taxi
       Aws.use_bundled_cert!
 
       @cache_dir = File.expand_path(ENV['TAXI_CACHE']) || File.join(Dir.tmpdir, 'taxi', 'cache')
+
+      @agencies = {
+        'agency1': {
+          folder: 'agency1',
+          name: 'Translatio Imperii'
+        },
+        'agency2': {
+          folder: 'agency2',
+          name: 'Russkaja'
+        },
+        'agency3': {
+          folder: 'agency3',
+          name: 'اَلْعَرَبِيَّةُ'
+        }
+      }
+      @agencies = OpenStruct.new(agencies)
     end
   end
 end
