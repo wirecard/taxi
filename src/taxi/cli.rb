@@ -146,10 +146,10 @@ module Taxi
 
     desc 'config', 'Output the currently loaded config'
     def config
-      unless ENV.key?('TAXI_ENV')
-        raise StandardError, 'Tried to print environment without $TAXI_ENV set. ' \
-          'Abort printing production credentials.'
-      end
+      # unless ENV.key?('TAXI_ENV')
+      #   raise StandardError, 'Tried to print environment without $TAXI_ENV set. ' \
+      #     'Abort printing production credentials.'
+      # end
 
       Config.instance.print
     end
