@@ -1,3 +1,6 @@
+.env.test
+keys/
+
 *.gem
 *.rbc
 /.config

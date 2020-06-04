@@ -47,7 +47,13 @@ module Taxi
 
       # get list of objects
       response = s3.list_objects_v2(bucket: bucket, prefix: site)
-      files = response.contents.map(&:key)
+      files = response.contents.map(&:key).reject do |path|
+        [
+          '*/branches/**', '*/tags/**', '*/pr/**', # exclude git subfolders
+          '*/tmp/**', '*/trash/**', # exclude user subfolders
+          '*/??/**' # exclude language subfolders, e.g. ru/ or de/
+        ].any? { |glob| File.fnmatch(glob, path) }
+      end
 
       if files.size.zero?
         raise AWSError.new("No files downloaded: #{bucket} @ #{site}")
@@ -60,6 +66,7 @@ module Taxi
       progress = ProgressBar.create(title: '  AWS::Get'.green, total: files.size)
       Dir.chdir(dir) do
         files.each do |file|
+          # progress.title = file
           FileUtils.mkdir_p(File.dirname(file))
           s3.get_object(
             response_target: file,
@@ -136,7 +143,7 @@ module Taxi
 
     def aws_assume_role
       aws_config = Config.instance.aws_config
-      tags = ['client TAXI', 'repository wirecard/taxi', 'team tecodc']
+      tags = ['client TAXI', 'repository wirecard/taxi', 'team tecdoc']
       tags.map! do |entry|
         key, value = entry.split(' ')
         { key: key, value: value }
@@ -145,7 +152,7 @@ module Taxi
       Aws::AssumeRoleCredentials.new(
         client: @aws_sts_client,
         role_arn: aws_config.role_assume,
-        role_session_name: 'github://wirecard/taxi',
+        role_session_name: 'TecDoc-Taxi',
         duration_seconds: 1200,
         tags: tags
       )

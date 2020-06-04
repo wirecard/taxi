@@ -56,12 +56,23 @@ module Taxi
       aws_config = {
         access_key_id: ENV['AWS_ACCESS_KEY_ID'],
         secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],
-        region: ENV['AWS_REGION'],
+        region: ENV['AWS_DEFAULT_REGION'],
         role_assume: ENV['AWS_ROLE_TO_ASSUME'],
-        endpoint_url: ENV['AWS_ENDPOINT_URL'],
         signature_version: ENV['AWS_SIGNATURE_VERSION']&.to_sym || :v2
       }
+      aws_config[:endpoint_url] = ENV['AWS_ENDPOINT_URL'] if ENV.key?('AWS_ENDPOINT_URL')
+
       @aws_config = OpenStruct.new(aws_config)
+
+      Aws.config.update(
+        access_key_id: @aws_config.access_key_id,
+        secret_access_key: @aws_config.secret_access_key,
+        region: @aws_config.region
+      )
+      Aws.config.update(
+        endpoint: @aws_config.endpoint_url
+      ) if aws_config.key?('AWS_ENDPOINT_URL')
+      Aws.use_bundled_cert!
 
       sftp_config = {
         user: ENV['SFTP_USER'],
@@ -70,14 +81,6 @@ module Taxi
         keys: ENV['SFTP_KEYS']
       }
       @sftp_config = OpenStruct.new(sftp_config)
-
-      Aws.config.update(
-        endpoint: @aws_config.endpoint_url,
-        access_key_id: @aws_config.access_key_id,
-        secret_access_key: @aws_config.secret_access_key,
-        region: @aws_config.region
-      )
-      Aws.use_bundled_cert!
 
       @cache_dir = File.expand_path(ENV['TAXI_CACHE']) || File.join(Dir.tmpdir, 'taxi', 'cache')
 

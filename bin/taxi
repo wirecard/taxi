@@ -6,9 +6,13 @@ libdir = File.join(File.dirname(__FILE__), '..', 'src')
 $LOAD_PATH.unshift(libdir) unless $LOAD_PATH.include?(libdir)
 
 require 'dotenv'
-Dotenv.load if ENV.key?('DEV_ENV')
+raise 'No $TAXI_ENV variable set' unless ENV.key?('TAXI_ENV')
+
+Dotenv.load('.env.local') if ENV['TAXI_ENV'].downcase == 'local'
+Dotenv.load('.env.test') if %w[test dev].include?(ENV['TAXI_ENV'].downcase)
+
 # Needs AWS_* env vars
-Dotenv.require_keys('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_REGION')
+Dotenv.require_keys('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_DEFAULT_REGION')
 # Needs SFTP env vars
 Dotenv.require_keys('SFTP_HOST', 'SFTP_PORT', 'SFTP_KEYS')
 

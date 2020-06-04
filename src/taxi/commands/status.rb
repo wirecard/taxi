@@ -37,7 +37,7 @@ module Taxi
         folder_hash = {}
         folders.each do |folder|
           title = folder['name'][2..-1].upcase
-          path = File.join('/', folder['name'])
+          path = folder['name']
           folder_hash[title] = ls_to_h(path, agency: a)
         end
         print_folders(folder_hash: folder_hash, format: format)
@@ -103,7 +103,7 @@ module Taxi
       return unless STATUS_FOLDERS[status]
 
       title = status.upcase
-      path = File.join('/', STATUS_FOLDERS[status])
+      path = STATUS_FOLDERS[status]
       folder_hash = {}
       folder_hash[title] = ls_to_h(path, agency: agency)
       print_folders(folder_hash: folder_hash, format: format)

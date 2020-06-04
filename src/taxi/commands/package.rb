@@ -56,7 +56,7 @@ module Taxi
       # package_name = Utils.get_package_name(name, from: from, to: to)
       sftp = ::Taxi::SFTP.new(agency)
       packages = sftp.glob(
-        File.join('/', DirConfig::DEPLOY),
+        DirConfig::DEPLOY,
         "#{name}-*"
       ).map(&:name)
       package_name = packages.max # TODO this will only deploy last translation
@@ -86,8 +86,8 @@ module Taxi
       # move all packages that match the glob "name-*"
       packages.each do |pkg|
         sftp.move(
-          File.join('/', DirConfig::DEPLOY, pkg),
-          File.join('/', DirConfig::DONE, pkg)
+          File.join(DirConfig::DEPLOY, pkg),
+          File.join(DirConfig::DONE, pkg)
         )
       end
     end

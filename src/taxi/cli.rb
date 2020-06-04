@@ -14,8 +14,9 @@ require 'taxi/utils/log'
 module Taxi
   module SubCLI
     class PackageCommand < Thor
+      class_option :bucket, default: ENV['AWS_DEFAULT_BUCKET'], desc: 'Specify a S3 bucket (default: ENV["AWS_DEFAULT_BUCKET"])'
+
       desc 'make <name> <path>', 'Create a translation package for <name> at <path> on S3'
-      option :bucket, default: ENV['AWS_DEFAULT_BUCKET']
       def make(name, path)
         Log.info("package make name=#{name} path=#{path} bucket=#{options[:bucket]}")
 
@@ -25,9 +26,9 @@ module Taxi
         ::Taxi::Package.make(name, path, bucket: options[:bucket])
       end
 
-      desc 'translate <name> <from> <to>',
-        'Upload the translation package <name> to SFTP to be translated to from language <from> to <to>
-        ! <from> defaults to "en_US"'
+      desc 'translate name from to',
+        'Upload the translation package with name and languages from and to
+        (default: name=en_US)'
       option :agency, required: true
       def translate(name, from='en_US', to)
         agency = options[:agency]
@@ -38,7 +39,6 @@ module Taxi
       desc 'deploy <name> <path> [<from>] <to>', 'Deploy translation package <name> (translated <from> to <to>) to S3.
       Will be uploaded under <path>/ru for ru_RU, <path>/it for it_IT, etc.
       ! <from> defaults to "en_US"'
-      option :bucket, default: ENV['AWS_DEFAULT_BUCKET']
       option :agency, required: true
       def deploy(name, path, from="en_US", to)
         agency = options[:agency]
@@ -68,11 +68,18 @@ module Taxi
     end
 
     class SFTPCommand < Thor
-      option :agency, required: true
-      desc 'ls [path]', 'List files on the SFTP server'
+      class_option :agency, required: true
+
+      desc 'ls [path]', 'List files'
       def ls(path = '/')
         agency = options[:agency]
         ::Taxi::SFTP.new(agency).print_ls(path)
+      end
+
+      desc 'mv name [from] [to]', 'Move a package - name may include language codes (default: from OPEN to DEPLOY)'
+      def mv(name, from = DirConfig::OPEN, to = DirConfig::DEPLOY)
+        agency = options[:agency]
+        ::Taxi::SFTP.new(agency).move_glob(name, from, to)
       end
     end
 

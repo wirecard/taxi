@@ -37,19 +37,45 @@ module Taxi
       return dirlist
     end
 
-    def move(from, to)
-      puts "> SFTP rename: #{from.whiteish} -> #{to.whiteish}".blue
-      @sftp.rename!(from, to)
+    def move_glob(name, from, to)
+      packages = @sftp.dir.glob(
+        from, "#{name}-*"
+      ).map(&:name)
+      packages.each do |pkg|
+        move(File.join(from, pkg), File.join(to, pkg))
+        remove(pkg, path: from, include_parent: true)
+      end
     end
 
-    def remove(dir, category: DirConfig::OPEN, path: File.join('/', category))
-      cpath = File.join(path, dir)
+    def move(from, to)
+      puts "> SFTP rename: #{from.whiteish} -> #{to.whiteish}".blue
+      begin
+        @sftp.rename!(from, to)
+      rescue Net::SFTP::StatusException => ex
+        # manual rename
+        puts ">>> SFTP manual rename".blue
+        file_list = get_file_list(from)
+        progressbar = ProgressBar.create(
+          title: '  SFTP:rename'.purple, total: file_list.size)
+        file_list.each do |entry|
+          file_from = File.join(from, entry.name)
+          file_to = File.join(to, entry.name)
+          if entry.directory?
+            @sftp.mkdir(file_to)
+          else
+            @sftp.rename!(file_from, file_to)
+          end
+          progressbar.increment
+        end
+        progressbar.finish unless progressbar.finished?
+      end
+    end
+
+    def remove(dir, path: DirConfig::OPEN, include_parent: false)
+      cpath = (path.nil?) ? dir : File.join(path, dir)
 
       begin
-        file_list = []
-        @sftp.dir.glob(cpath, '**/*') do |entry|
-          file_list << entry
-        end
+        file_list = get_file_list(cpath)
       rescue Net::SFTP::StatusException => status_ex
         return if status_ex.code == 2
 
@@ -57,7 +83,6 @@ module Taxi
       end
 
       puts '> SFTP Remove started'.purple
-      file_list.sort! { |a,b| b.name.count('/') <=> a.name.count('/') }
 
       progressbar = ProgressBar.create(
         title: '  SFTP:remove'.purple, total: file_list.size)
@@ -67,13 +92,14 @@ module Taxi
         entry.directory? ? @sftp.rmdir!(fpath) : @sftp.remove(fpath)
         progressbar.increment
       end
+      @sftp.rmdir!(cpath) if include_parent
       puts '> SFTP Remove finished'.purple
     end
 
     def download(package, category: DirConfig::DEPLOY)
       Log.info("SFTP Download #{package}")
 
-      remote_dir = File.join('/', category)
+      remote_dir = category
       local_dir = Config.cache_dir('deploy')
 
       puts '> SFTP Download'.blue
@@ -107,7 +133,7 @@ module Taxi
       puts '> SFTP Download finished'.green
     end
 
-    def upload(src, dst, base = File.join('/', DirConfig::OPEN))
+    def upload(src, dst, base = DirConfig::OPEN)
       Log.info("SFTP Upload src=#{src} base=#{base} dst=#{dst}")
       puts '> SFTP Upload'.blue
       puts "              BASE = #{base.blueish}".blue
@@ -155,6 +181,13 @@ module Taxi
 
     private
 
+    def get_file_list(path)
+      file_list = []
+      @sftp.dir.glob(path, '**/*') { |entry| file_list << entry }
+      file_list.sort! { |a,b| b.name.count('/') <=> a.name.count('/') }
+      return file_list
+    end
+
     def create_dir(path)
       Log.debug("Creating  #{path}")
       @sftp.mkdir!(path)
@@ -163,7 +196,7 @@ module Taxi
     def checks
       subdirs = [
         DirConfig::OPEN, DirConfig::DEPLOY, DirConfig::DONE
-      ].map { |dir| File.join('/', dir) }
+      ]
 
       subdirs.each do |subdir|
         create_dir(subdir) unless exists?(subdir)
@@ -186,6 +219,7 @@ module Taxi
       options[:user_known_hosts_file] = '/dev/null' if ENV.key?('DEV_ENV')
       options[:verbose] = ENV['LOGLEVEL']&.to_sym || :error
       @sftp = Net::SFTP.start(sftp_config.host, user, options)
+      checks
     end
 
   end
