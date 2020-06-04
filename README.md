@@ -51,7 +51,7 @@ So the complete identifier for a *package* is `<name>-<from>-<to>-<date>`, where
 Using `taxi`, an example workflow would be:
 1. `taxi package make`
 2. `taxi package translate`
-3. Translation
+3. Translation (or `taxi package mv` for testing purposes)
 4. `taxi package deploy`
 
 You can use `taxi package status all|open|deploy|done` to check the status of packages.
