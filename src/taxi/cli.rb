@@ -116,7 +116,9 @@ module Taxi
 
       desc 'create <name> <lang_code> <from> [to=latest] [format=html]', 'Create file that shows changes between translations since <from>.'
       def create(name, lang, from, to = 'latest')
-        ::Taxi::Review.create(name, lang, from, to, format: options[:format], agency: options[:agency])
+        ::Taxi::Review.create(
+          name, lang, from, to, format: options[:format], agency: options[:agency]
+        )
       end
     end
   end
@@ -144,9 +146,9 @@ module Taxi
 
     desc 'config', 'Output the currently loaded config'
     def config
-      unless ENV.key?('DEV_ENV')
-        raise StandardError, 'Tried to print environment without $DEV_ENV set. ' \
-            'Abort printing production credentials.'
+      unless ENV.key?('TAXI_ENV')
+        raise StandardError, 'Tried to print environment without $TAXI_ENV set. ' \
+          'Abort printing production credentials.'
       end
 
       Config.instance.print
