@@ -8,6 +8,7 @@ set -eEuo pipefail
 trap "Error occurred! Have you called dev/init.sh beforehand?" ERR
 
 finish() {
+    read -r -n 1 -p "Waiting..."
     _cleanup || true
     _docker stop
 }
@@ -18,7 +19,7 @@ trap finish EXIT
 ################################################################################
 # TAXI
 TAXI_ENV="local"
-TAXI_CACHE="$(mktemp -d -t taxi-cache.XXXXXX)"
+TAXI_CACHE="$(mktemp -d -t taxi-cache)"
 export TAXI_CACHE
 
 # MISC
@@ -79,6 +80,10 @@ _download_sample() {
         _fail
     fi
     popd > /dev/null
+}
+
+_prepare() {
+    echo -e "${BBLU}[MISC]${BLU} prepare services${RST}"
 }
 
 _configure() {
@@ -147,8 +152,6 @@ _upload_sample() {
 
 _taxi_tests() {
     echo -e "${BBLU}[TAXI]${BLU} Staring test run...${RST}"
-    export TAXI_ENV
-    export TAXI_CACHE
 
     unset AWS_ACCESS_KEY_ID
     unset AWS_SECRET_ACCESS_KEY
@@ -171,8 +174,16 @@ _taxi_tests() {
     _success
 
     echo -e "${BBLU}[TAXI] {package}${BLU} deploy${RST}"
-    bundle exec ./bin/taxi package deploy "$NAME" docs-template de_DE --agency="$AGENCY" --bucket="$BUCKET"
+    bundle exec ./bin/taxi package deploy "$NAME" "$(basename $SAMPLE_DIR)" de_DE --agency="$AGENCY" --bucket="$BUCKET"
     _success
+
+    # final check
+    DOWNLOAD_DIR="$(mktemp -d -t taxi-download)"
+    subdir="$(basename $URL)"
+
+    echo -e "${BBLU}[TAXI] Check original and final files${RST}"
+    _aws s3 cp "s3://$AWS_DEFAULT_BUCKET/$subdir" "$DOWNLOAD_DIR" --recursive
+    diff -q -r "$SAMPLE_DIR" "$DOWNLOAD_DIR"
 }
 
 _cleanup() {
@@ -193,9 +204,13 @@ _main() {
             ;;
         test)
             # download sample HTML
-            # _download_sample
+            _download_sample
             # start docker containers
             _docker start
+            # wait until services are running
+            sleep 3
+            # prepare SFTP and S3
+            _prepare
             # configure environment and AWS CLI
             _configure
             _aws_configure

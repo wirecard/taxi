@@ -2,7 +2,6 @@
 
 require 'singleton'
 require 'ostruct'
-require 'amazing_print'
 require 'aws-sdk-s3'
 require 'fileutils'
 
