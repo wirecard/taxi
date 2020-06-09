@@ -19,8 +19,7 @@ trap finish EXIT
 ################################################################################
 # TAXI
 TAXI_ENV="local"
-TAXI_CACHE="$(mktemp -d -t taxi-cache)"
-export TAXI_CACHE
+AGENCY="agency3"
 
 # MISC
 TMPDIR="/tmp"
@@ -84,6 +83,7 @@ _download_sample() {
 
 _prepare() {
     echo -e "${BBLU}[MISC]${BLU} prepare services${RST}"
+    rm -rf "dev/sftp-data/$AGENCY"/*
 }
 
 _configure() {
@@ -94,6 +94,10 @@ _configure() {
     AWS_DEFAULT_BUCKET="testing"
     ROOT_AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
     ROOT_AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+
+    TAXI_CACHE="/tmp/taxi-cache"
+    rm -rf "$TAXI_CACHE"
+    export TAXI_CACHE
 }
 
 _aws_configure() {
@@ -113,7 +117,7 @@ _aws_assume_role() {
     aws --profile "$AWS_DEFAULT_PROFILE" configure set default.s3.signature_version s3v4
     tmpfile=$(mktemp)
     _aws sts assume-role --role-arn "$AWS_ROLE_TO_ASSUME" --role-session-name testing \
-        > "$tmpfile"
+         > "$tmpfile"
 
     export AWS_ACCESS_KEY_ID=$(jq .Credentials.AccessKeyId "$tmpfile")
     export AWS_SECRET_ACCESS_KEY=$(jq .Credentials.SecretAccessKey "$tmpfile")
@@ -160,30 +164,36 @@ _taxi_tests() {
 
     NAME="template"
     BUCKET="testing"
-    AGENCY="agency1"
+    LANG_FROM="en_US"
+    LANG_TO="de_DE"
     echo -e "${BBLU}[TAXI] {package}${BLU} make${RST}"
     bundle exec ./bin/taxi package make "$NAME" "$(basename $SAMPLE_DIR)" --bucket="$BUCKET"
     _success
 
     echo -e "${BBLU}[TAXI] {package}${BLU} translate${RST}"
-    bundle exec ./bin/taxi package translate "$NAME" en_US de_DE --agency="$AGENCY" --bucket="$BUCKET"
+    bundle exec ./bin/taxi package translate "$NAME" "$LANG_FROM" "$LANG_TO" --agency="$AGENCY" --bucket="$BUCKET"
     _success
 
     echo -e "${BBLU}[TAXI] {SFTP}${BLU} mv${RST}"
-    bundle exec ./bin/taxi sftp mv template-en_US-de_DE --agency="$AGENCY"
+    bundle exec ./bin/taxi sftp mv "template-$LANG_FROM-$LANG_TO" --agency="$AGENCY"
     _success
 
     echo -e "${BBLU}[TAXI] {package}${BLU} deploy${RST}"
-    bundle exec ./bin/taxi package deploy "$NAME" "$(basename $SAMPLE_DIR)" de_DE --agency="$AGENCY" --bucket="$BUCKET"
+    bundle exec ./bin/taxi package deploy "$NAME" "$(basename $SAMPLE_DIR)" "$LANG_TO" --agency="$AGENCY" --bucket="$BUCKET"
     _success
 
     # final check
-    DOWNLOAD_DIR="$(mktemp -d -t taxi-download)"
+    DOWNLOAD_DIR="/tmp/taxi-translated"
+    rm -rf "$DOWNLOAD_DIR"
     subdir="$(basename $URL)"
 
     echo -e "${BBLU}[TAXI] Check original and final files${RST}"
-    _aws s3 cp "s3://$AWS_DEFAULT_BUCKET/$subdir" "$DOWNLOAD_DIR" --recursive
-    diff -q -r "$SAMPLE_DIR" "$DOWNLOAD_DIR"
+    _aws s3 cp "s3://$AWS_DEFAULT_BUCKET/$subdir/" "$DOWNLOAD_DIR" --recursive >/dev/null
+    if diff -q -r "$SAMPLE_DIR" "$DOWNLOAD_DIR/${LANG_TO::2}/"; then
+        _success
+    else
+        _fail
+    fi
 }
 
 _cleanup() {

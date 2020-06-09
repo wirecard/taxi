@@ -51,8 +51,8 @@ module Taxi
         [
           '*/branches/**', '*/tags/**', '*/pr/**', # exclude git subfolders
           '*/tmp/**', '*/trash/**', # exclude user subfolders
-          '*/??/**' # exclude language subfolders, e.g. ru/ or de/
-        ].any? { |glob| File.fnmatch(glob, path) }
+        ].any? { |glob| File.fnmatch(glob, path) } ||
+          File.fnmatch('*/{en,de,ru,fr}/**', path, File::FNM_EXTGLOB)
       end
 
       if files.size.zero?
@@ -89,11 +89,12 @@ module Taxi
       bucket = s3.bucket(bucket)
 
       files = Dir.glob(File.join(local_dir, '**/*')).reject { |f| File.directory?(f) }
+      dir_prefix = (local_dir.end_with?('/')) ? local_dir : "#{local_dir}/"
       puts "> Uploading #{files.size} files".yellow
       progressbar = ProgressBar.create(title: '  AWS::Put'.yellow, total: files.size)
       files.each do |file|
-        basename = File.basename(file)
-        file_path = (remote_subdir.nil?) ? basename : File.join(remote_subdir, basename)
+        rel_path = file.delete_prefix(dir_prefix)
+        file_path = (remote_subdir.nil?) ? rel_path : File.join(remote_subdir, rel_path)
         bucket.object(file_path).upload_file(file) do |response|
           progressbar.increment
         end
