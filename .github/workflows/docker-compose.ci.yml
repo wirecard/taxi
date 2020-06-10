@@ -1,0 +1,16 @@
+name: Taxi Test
+
+on: [push]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TAXI_ENV: local
+      
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run Taxi Tests
+      run: ./test.sh test
+
