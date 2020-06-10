@@ -30,6 +30,12 @@ ssh-keygen -N '' -t ed25519 -f "${KEYS_DIR}/host/ed25519_key" <<< y > /dev/null
 ssh-keygen -N '' -t rsa -b 4096 -f "${KEYS_DIR}/host/rsa_key" <<< y > /dev/null
 print_ok_failed $?
 
+echo -n "Generate Folder Structure....   "
+for agency in ${AGENCIES}; do
+    mkdir -p "${DATA_DIR}/${agency}"/{1_open,2_deploy,3_done}
+done
+print_ok_failed $?
+
 echo -n "Generate Agency Keys...         "
 mkdir -p "${CONFIG_DIR}"
 uid=1001
@@ -43,9 +49,3 @@ for agency in ${AGENCIES}; do
 done
 print_ok_failed $?
 
-
-echo -n "Generate Folder Structure....   "
-for agency in ${AGENCIES}; do
-    mkdir -p "${DATA_DIR}/${agency}"/{1_open,2_deploy,3_done}
-done
-print_ok_failed $?
