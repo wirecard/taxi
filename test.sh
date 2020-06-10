@@ -208,12 +208,12 @@ _cleanup() {
 _run() {
     # download sample HTML
     _download_sample
+    # prepare SFTP and S3
+    _prepare
     # start docker containers
     _docker start
     # wait until services are running
     sleep 3
-    # prepare SFTP and S3
-    _prepare
     # configure environment and AWS CLI
     _configure
     _aws_configure
