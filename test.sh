@@ -8,11 +8,13 @@ set -eEuo pipefail
 trap "Error occurred! Have you called dev/init.sh beforehand?" ERR
 
 finish() {
-    read -r -n 1 -p "Waiting..."
     _cleanup || true
     _docker stop
 }
-trap finish EXIT
+finish_wait() {
+    read -r -n 1 -p "Waiting..."
+    finish
+}
 
 ################################################################################
 # VARIABLES
@@ -233,10 +235,12 @@ _main() {
             _docker "$@"
             ;;
         ci)
+            trap finish EXIT
             ./dev/init.sh
             _run
             ;;
         test)
+            trap finish_wait EXIT
             _run
             ;;
         *)
