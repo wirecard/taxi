@@ -24,7 +24,6 @@ rm -rf ${KEYS_DIR}/* ${DATA_DIR}/* ${CONFIG_DIR}/*
 print_ok_failed $?
 
 echo -n "Generate Host Keys...           "
-ls -al "${KEYS_DIR}"
 mkdir -p "${KEYS_DIR}"
 ls -al "${KEYS_DIR}"
 mkdir -p "${KEYS_DIR}/host"
@@ -40,7 +39,6 @@ done
 print_ok_failed $?
 
 echo -n "Generate Agency Keys...         "
-ls -al "${CONFIG_DIR}"
 mkdir -p "${CONFIG_DIR}"
 ls -al "${CONFIG_DIR}"
 uid=1001
