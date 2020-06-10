@@ -24,7 +24,9 @@ rm -rf ${KEYS_DIR}/* ${DATA_DIR}/* ${CONFIG_DIR}/*
 print_ok_failed $?
 
 echo -n "Generate Host Keys...           "
+ls -al "${KEYS_DIR}"
 mkdir -p "${KEYS_DIR}"
+ls -al "${KEYS_DIR}"
 mkdir -p "${KEYS_DIR}/host"
 ssh-keygen -N '' -t ed25519 -f "${KEYS_DIR}/host/ed25519_key" <<< y > /dev/null
 ssh-keygen -N '' -t rsa -b 4096 -f "${KEYS_DIR}/host/rsa_key" <<< y > /dev/null
@@ -33,11 +35,14 @@ print_ok_failed $?
 echo -n "Generate Folder Structure....   "
 for agency in ${AGENCIES}; do
     mkdir -p "${DATA_DIR}/${agency}"/{1_open,2_deploy,3_done}
+    ls -al "${DATA_DIR}/${agency}"
 done
 print_ok_failed $?
 
 echo -n "Generate Agency Keys...         "
+ls -al "${CONFIG_DIR}"
 mkdir -p "${CONFIG_DIR}"
+ls -al "${CONFIG_DIR}"
 uid=1001
 gid=1000
 for agency in ${AGENCIES}; do
