@@ -39,6 +39,10 @@ jobs:
       run: |
         docker logs sftp
         ls -al dev/
+        echo "DATA"
         ls -al dev/sftp-data/
+        ls -al dev/sftp-data/*
+        echo "KEYS"
         ls -al dev/sftp-keys/
+        ls -al dev/sftp-keys/*
 

@@ -25,6 +25,7 @@ print_ok_failed $?
 
 echo -n "Generate Host Keys...           "
 mkdir -p "${KEYS_DIR}"
+echo "=== KEYS ==="
 ls -al "${KEYS_DIR}"
 mkdir -p "${KEYS_DIR}/host"
 ssh-keygen -N '' -t ed25519 -f "${KEYS_DIR}/host/ed25519_key" <<< y > /dev/null
@@ -33,9 +34,12 @@ print_ok_failed $?
 
 echo -n "Generate Folder Structure....   "
 for agency in ${AGENCIES}; do
+    echo "$agency"
     mkdir -p "${DATA_DIR}/${agency}"/{1_open,2_deploy,3_done}
     ls -al "${DATA_DIR}/${agency}"
 done
+echo "=== DATA ==="
+ls -al "${DATA_DIR}"
 print_ok_failed $?
 
 echo -n "Generate Agency Keys...         "
