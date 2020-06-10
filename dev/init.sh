@@ -25,33 +25,20 @@ print_ok_failed $?
 
 echo -n "Generate Host Keys...           "
 mkdir -p "${KEYS_DIR}"
-echo "=== KEYS ==="
-ls -al "${KEYS_DIR}"
 mkdir -p "${KEYS_DIR}/host"
 ssh-keygen -N '' -t ed25519 -f "${KEYS_DIR}/host/ed25519_key" <<< y > /dev/null
 ssh-keygen -N '' -t rsa -b 4096 -f "${KEYS_DIR}/host/rsa_key" <<< y > /dev/null
 print_ok_failed $?
 
-echo -n "Generate Folder Structure....   "
-for agency in ${AGENCIES}; do
-    echo "$agency"
-    mkdir -p "${DATA_DIR}/${agency}"/{1_open,2_deploy,3_done}
-    ls -al "${DATA_DIR}/${agency}"
-done
-echo "=== DATA ==="
-ls -al "${DATA_DIR}"
-print_ok_failed $?
-
 echo -n "Generate Agency Keys...         "
 mkdir -p "${CONFIG_DIR}"
-ls -al "${CONFIG_DIR}"
 uid=1001
 gid=1000
 for agency in ${AGENCIES}; do
     mkdir -p "${KEYS_DIR}/${agency}"
     # ssh-keygen -t ed25519 -f "${KEYS_DIR}/${agency}/ed25519_key" < /dev/null
     ssh-keygen -N '' -t rsa -b 4096 -f "${KEYS_DIR}/${agency}/rsa_key" <<< y > /dev/null
-    echo "${agency}::${uid}:${gid}" >> "${CONFIG}"
+    echo "${agency}::${uid}:${gid}:1_open,2_deploy,3_done" >> "${CONFIG}"
     ((uid++))
 done
 print_ok_failed $?

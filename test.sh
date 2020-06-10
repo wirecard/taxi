@@ -83,7 +83,6 @@ _download_sample() {
 
 _prepare() {
     echo -e "${BBLU}[MISC]${BLU} prepare services${RST}"
-    rm -rf "dev/sftp-data/$AGENCY"/* || true
 }
 
 _configure() {
