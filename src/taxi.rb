@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'amazing_print'
+
 require 'taxi/cli'
 require 'taxi/config'
 # commands

@@ -38,14 +38,8 @@ for agency in ${AGENCIES}; do
     mkdir -p "${KEYS_DIR}/${agency}"
     # ssh-keygen -t ed25519 -f "${KEYS_DIR}/${agency}/ed25519_key" < /dev/null
     ssh-keygen -N '' -t rsa -b 4096 -f "${KEYS_DIR}/${agency}/rsa_key" <<< y > /dev/null
-    echo "${agency}::${uid}:${gid}" >> "${CONFIG}"
+    echo "${agency}::${uid}:${gid}:1_open,2_deploy,3_done" >> "${CONFIG}"
     ((uid++))
 done
 print_ok_failed $?
 
-
-echo -n "Generate Folder Structure....   "
-for agency in ${AGENCIES}; do
-    mkdir -p "${DATA_DIR}/${agency}"/{1_open,2_deploy,3_done}
-done
-print_ok_failed $?

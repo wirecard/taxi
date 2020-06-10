@@ -2,7 +2,6 @@
 
 require 'singleton'
 require 'ostruct'
-require 'amazing_print'
 require 'aws-sdk-s3'
 require 'fileutils'
 
@@ -71,7 +70,7 @@ module Taxi
       )
       Aws.config.update(
         endpoint: @aws_config.endpoint_url
-      ) if aws_config.key?('AWS_ENDPOINT_URL')
+      ) if aws_config.key?(:endpoint_url)
       Aws.use_bundled_cert!
 
       sftp_config = {
