@@ -35,5 +35,10 @@ jobs:
       run: ./test.sh ci
 
     - name: "Output logs"
-      run: docker logs sftp
+      if: always()
+      run: |
+        docker logs sftp
+        ls -al dev/
+        ls -al dev/sftp-data/
+        ls -al dev/sftp-keys/
 
