@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TAXI_ENV: local
+      LOGLEVEL: debug
       
     steps:
     - name: "Setup ruby 2.6"
@@ -32,4 +33,7 @@ jobs:
 
     - name: "Run Taxi Tests"
       run: ./test.sh ci
+
+    - name: "Output logs"
+      run: docker logs sftp
 
