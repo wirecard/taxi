@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TAXI_ENV: local
-      LOGLEVEL: debug
+      LOGLEVEL: error
       
     steps:
     - name: "Setup ruby 2.6"
@@ -33,16 +33,4 @@ jobs:
 
     - name: "Run Taxi Tests"
       run: ./test.sh ci
-
-    - name: "Output logs"
-      if: always()
-      run: |
-        docker logs sftp
-        ls -al dev/
-        echo "DATA"
-        ls -al dev/sftp-data/
-        ls -al dev/sftp-data/*
-        echo "KEYS"
-        ls -al dev/sftp-keys/
-        ls -al dev/sftp-keys/*
 
