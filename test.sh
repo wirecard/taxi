@@ -205,6 +205,27 @@ _cleanup() {
 ################################################################################
 # MAIN
 ################################################################################
+_run() {
+    # download sample HTML
+    _download_sample
+    # start docker containers
+    _docker start
+    # wait until services are running
+    sleep 3
+    # prepare SFTP and S3
+    _prepare
+    # configure environment and AWS CLI
+    _configure
+    _aws_configure
+    _aws_assume_role
+    # upload the sample HTML to S3
+    _upload_sample
+    # run tests
+    _taxi_tests
+    # EXIT trap calls _cleanup
+    # EXIT trap stops containers
+}
+
 _main() {
     local CMD="$1"
     shift
@@ -212,25 +233,12 @@ _main() {
         docker)
             _docker "$@"
             ;;
+        ci)
+            ./dev/init.sh
+            _run
+            ;;
         test)
-            # download sample HTML
-            _download_sample
-            # start docker containers
-            _docker start
-            # wait until services are running
-            sleep 3
-            # prepare SFTP and S3
-            _prepare
-            # configure environment and AWS CLI
-            _configure
-            _aws_configure
-            _aws_assume_role
-            # upload the sample HTML to S3
-            _upload_sample
-            # run tests
-            _taxi_tests
-            # EXIT trap calls _cleanup
-            # EXIT trap stops containers
+            _run
             ;;
         *)
             echo "Undefined command: $CMD"
