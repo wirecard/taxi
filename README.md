@@ -206,6 +206,11 @@ You may create more buckets and add more content at this point.
 `taxi` will use the environment variables specified in `.env` if `DEV_ENV=1`.
 These variables will set up `taxi` to use the local infrastructure from `dev/docker-compose.yml`.
 
+Check the status of source code documentation by running:
+```sh
+bundle exec rake doc:suggest
+```
+
 ### TODO
 * [x] SFTP: Add multiple users (via `users.conf`)
 * [ ] SFTP: Mount user config file for users, and generate the keys according to the user names in that config

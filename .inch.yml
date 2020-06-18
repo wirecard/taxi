@@ -1,0 +1,4 @@
+files:
+  included:
+    - src/**/*.rb
+    - bin/taxi

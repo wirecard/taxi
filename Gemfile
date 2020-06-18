@@ -30,3 +30,5 @@ gem "bcrypt_pbkdf", "~> 1.0"
 gem "minitar", "~> 0.9"
 
 gem 'fast_html_diff'
+
+gem "inch", "~> 0.8.0"
