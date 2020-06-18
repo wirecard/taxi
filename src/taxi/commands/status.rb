@@ -4,6 +4,7 @@ require 'taxi/config'
 require 'date'
 
 module Taxi
+  # Represents the status of translation packages
   class Status
     STATUS_FOLDERS = {
       'open' => DirConfig::OPEN,
@@ -12,6 +13,11 @@ module Taxi
     }.freeze
     LS_REGEX = /^(?<type>[d|-])r[rwx-]{8} .+ (?<mod_month>\w+) (?<mod_day>[0-9]{2}) ((?<mod_hour>[0-9]{2}):(?<mod_minute>[0-9]{2})|(?<mod_year>[0-9]{4})) (?<name>[\w]+)$/.freeze
 
+    # List all entries for a given agency in the specified format.
+    #
+    # @param format [String] 'json' or 'text' (defaults to 'text' for all other values)
+    # @param agency [String] agency on the SFTP, i.e. SFTP user
+    # @return [nil]
     def self.list_all(format:, agency:)
       # TODO: this is so fugly, please rewrite
       # check if specified agency is a valid agency
@@ -44,6 +50,12 @@ module Taxi
       end
     end
 
+    # Print the folder structure in the given format.
+    #
+    # @param folder_hash [Hash{String => String, Hash}] Hash of Strings
+    # that represents the folder structure recursively
+    # @param format [String] 'json' or 'text' (defaults to 'text' for all other values)
+    #
     def self.print_folders(folder_hash:, format:)
       time_format = '%A, %B %d %Y, %H:%M W%V'
       output_hash = {}
@@ -67,6 +79,10 @@ module Taxi
       puts JSON.pretty_unparse(output_hash) if format == 'json'
     end
 
+    # Return a hash describing the folder structure at +path+ for user +agency+.
+    #
+    # @param path [String] path for ls (default: '/')
+    # @param agency [String] agency on the SFTP, i.e. SFTP user
     def self.ls_to_h(path = '/', agency:)
       if @agency != agency
         @sftp = ::Taxi::SFTP.new(agency)
@@ -96,6 +112,12 @@ module Taxi
 
     def self.list_by_name(name:); end
 
+    # Only list packages with a certain status.
+    #
+    # @param [Hash{Symbol => String}] must contain the keys
+    # :status, :format and :agency
+    # @return [nil]
+    #
     def self.list_by_status(**kwargs)
       status = kwargs[:status]
       format = kwargs[:format]
