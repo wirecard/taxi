@@ -2,3 +2,5 @@ files:
   included:
     - src/**/*.rb
     - bin/taxi
+  excluded:
+    - src/taxi/utils/*.rb

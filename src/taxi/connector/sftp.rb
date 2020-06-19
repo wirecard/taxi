@@ -8,12 +8,27 @@ require 'taxi/utils/log'
 require 'taxi/utils/progressbar'
 
 module Taxi
+  # Container class for SFTP operations.
   class SFTP
-    # forward missing static method to instance
+
+    #
+    # Forward missing static method to singleton instance.
+    # Purely for convenience.
+    #
+    # @param method_name [Symbol] name of the method that is missing
+    # @param *arguments [Array] method arguments
+    # @return [Object] returns whatever the instance method returns
+    #
     def self.method_missing(method_name, *arguments)
       instance.send(method_name, *arguments)
     end
 
+    #
+    # Get a list of files for +path+ on the current SFTP connection.
+    #
+    # @param path [String] path on the SFTP server (default: '/')
+    # @return [Array<String>] list of files as String
+    #
     def ls(path = '/')
       dirlist = []
       @sftp.dir.foreach(path) do |element|
@@ -22,13 +37,29 @@ module Taxi
       return dirlist
     end
 
-    def print_ls(path)
+    #
+    # Print all files for +path+ on the current SFTP connection.
+    #
+    # @param path [String] path on the SFTP server (default: '/')
+    # @return [nil]
+    #
+    def print_ls(path = '/')
       elements = ls(path)
       elements.each do |e|
         puts e.longname
       end
     end
 
+    #
+    # Recursively get all files under +path+ that match +pattern+.
+    #
+    # @see File::fnmatch
+    # @see Dir::glob
+    #
+    # @param path [String] path on the SFTP server
+    # @param pattern [String] glob string
+    # @return [Array<String>] list of files
+    #
     def glob(path, pattern)
       dirlist = []
       @sftp.dir.glob(path, pattern) do |match|
@@ -47,6 +78,19 @@ module Taxi
       end
     end
 
+    #
+    # Rename a file or directory on the SFTP.
+    # This is the same as moving a file or directory from a source path
+    # to a destination path.
+    # SFTP generally supports recursive renames, but the AWS Tranfer Family layer
+    # in front of S3 does not.
+    # Therefore, a self-made implementation of the manual rename gets executed
+    # when working with the AWS SFTP connector.
+    #
+    # @param from [String] source path
+    # @param to [String] destination path
+    # @return [nil]
+    #
     def move(from, to)
       puts "> SFTP rename: #{from.whiteish} -> #{to.whiteish}".blue
       begin
@@ -71,6 +115,14 @@ module Taxi
       end
     end
 
+    #
+    # Remove a directory from the SFTP server.
+    #
+    # @param dir [String] directory name, under the the top-level folders (e.g. 1_open)
+    # @param path [DirConfig::*] the top-level directory
+    # @param include_parent [true,false] whether or not to delte the parent directory as well
+    # @return [nil]
+    #
     def remove(dir, path: DirConfig::OPEN, include_parent: false)
       cpath = (path.nil?) ? dir : File.join(path, dir)
 
@@ -96,6 +148,13 @@ module Taxi
       puts '> SFTP Remove finished'.purple
     end
 
+    #
+    # Download a package from the given stage.
+    #
+    # @param package [String] name of the package
+    # @param category [DirConfig::*] the current stage of the package
+    # @return [nil]
+    #
     def download(package, category: DirConfig::DEPLOY)
       Log.info("SFTP Download #{package}")
 
@@ -133,6 +192,14 @@ module Taxi
       puts '> SFTP Download finished'.green
     end
 
+    #
+    # Upload a local directory to the SFTP.
+    #
+    # @param src [String] local source path
+    # @param dst [String] remote source path
+    # @param base [DirConfig::*] stage where the package should reside
+    # @return [nil]
+    #
     def upload(src, dst, base = DirConfig::OPEN)
       Log.info("SFTP Upload src=#{src} base=#{base} dst=#{dst}")
       puts '> SFTP Upload'.blue
@@ -171,6 +238,12 @@ module Taxi
       puts '> SFTP Translate finished'.green
     end
 
+    #
+    # Check whether a file or directory exists on the SFTP server.
+    #
+    # @param path [String] path to file or directory
+    # @return [true,false]
+    #
     def exists?(path)
       dirname = File.dirname(path)
       basename = File.basename(path)
