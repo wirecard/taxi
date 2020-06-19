@@ -189,6 +189,14 @@ module Taxi
       class_option :agency, required: true
 
       desc 'create <name> <lang_code> <from> [to=latest] [format=html]', 'Create file that shows changes between translations since <from>.'
+      #
+      # Create a review file for the changes that have been applied to a specific documentation over time.
+      #
+      # @param name [String] the name of the partner or website
+      # @param lang [String] a 4 letter language and region identifier
+      # @param from [String] timestamp for the start date
+      # @param to [String] timestamp or 'latest' for the end date (default: latest)
+      #
       def create(name, lang, from, to = 'latest')
         ::Taxi::Review.create(
           name, lang, from, to, format: options[:format], agency: options[:agency]

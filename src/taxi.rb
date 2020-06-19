@@ -8,3 +8,7 @@ require 'taxi/config'
 require 'taxi/commands/package'
 require 'taxi/commands/status'
 
+# TAXI - Translation Automation eXchange Interface
+module Taxi
+end
+
